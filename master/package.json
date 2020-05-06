@@ -1,0 +1,16 @@
+{
+  "name": "esoftplay-chat",
+  "version": "0.0.1-a",
+  "description": "chat module on esoftplay framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node ./mover.js"
+  },
+  "keywords": [
+    "espftplay-chat",
+    "esoftplay"
+  ],
+  "author": "kholil@fisip.net",
+  "license": "GPL-3.0"
+}
