@@ -10,11 +10,15 @@ export interface ChatIndexProps {
 }
 
 export default function m(props: ChatIndexProps): any {
-  const [data, update, delData] = ChatHistory()
   
+  useEffect(()=>{
+
+  },[])
+
+
   return (
     <View style={{ flex: 1 }} >
-      <LibFocus onFocus={update} />
+      {/* <LibFocus onFocus={update} /> */}
     </View>
   )
 }

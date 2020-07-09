@@ -31,7 +31,7 @@ export default function m() {
     AppState.addEventListener("change", onAppStateChange)
     return () => {
       if (time) clearInterval(time)
-      AppState.addEventListener("change", onAppStateChange)
+      AppState.removeEventListener("change", onAppStateChange)
     }
   }, [])
 }

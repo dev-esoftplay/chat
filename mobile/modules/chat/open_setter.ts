@@ -29,7 +29,7 @@ export default function m(chat_id: string) {
     AppState.addEventListener("change", onAppStateChange)
     return () => {
       if (time) clearInterval(time)
-      AppState.addEventListener("change", onAppStateChange)
+      AppState.removeEventListener("change", onAppStateChange)
     }
   }, [])
 }

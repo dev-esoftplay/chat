@@ -3,7 +3,7 @@ import { createStore } from 'redux';
 import { persistStore } from 'redux-persist'
 import { PersistGate } from 'redux-persist/integration/react'
 import { Provider } from 'react-redux'
-import { esp, _global, ChatFirebase } from 'esoftplay';
+import { esp, _global } from 'esoftplay';
 import * as ErrorReport from 'esoftplay/error'
 import * as ErrorRecovery from 'expo-error-recovery';
 // import { enableScreens } from 'react-native-screens';
@@ -20,10 +20,6 @@ export default class App extends React.Component {
 		super(props)
 		ErrorRecovery.setRecoveryProps(props)
 		ErrorReport.getError(props.exp.errorRecovery)
-	}
-
-	componentDidMount(): void {
-		new ChatFirebase("test-chat").signInAnonymously()		
 	}
 
 	render() {

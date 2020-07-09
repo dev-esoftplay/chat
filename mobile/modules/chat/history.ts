@@ -14,12 +14,11 @@ export default function m(): [any[], () => void, () => void] {
 
   function get() {
     if (!user.hasOwnProperty("id")) return
-    let counterStart = 0
-    let counterEnd = 0
     main.child("history").child(user.id).child(group_id).once('value', snapshoot => {
       if (!snapshoot.val())
         return
       let histories: any[] = []
+      const keys = Object.keys(snapshoot.val())
       Object.values(snapshoot.val()).forEach((item: any) => {
         main.child("chat").child(item.chat_id).child("conversation").limitToLast(1).once('value', snapshoot => {
           const opposite_id = item.user_id
@@ -32,8 +31,7 @@ export default function m(): [any[], () => void, () => void] {
             item['read'] = _snapshoot.read
             main.child('users').child(opposite_id).once('value', snapshoot => {
               histories.push({ ...item, ...snapshoot.val() })
-              counterEnd++
-              if (counterEnd == counterStart) {
+              if (keys.length == histories.length) {
                 function compare(a: any, b: any) {
                   if (a.time < b.time) return 1
                   if (a.time > b.time) return -1
