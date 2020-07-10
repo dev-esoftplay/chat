@@ -1,0 +1,24 @@
+{
+  "config": {
+    "domain": "test.bbo.co.id",
+    "salt": "5ef059938ba799aaa845e1c2e8a762bd",
+    "errorReport": {
+      "telegramIds": [
+        "-1001212227631"
+      ]
+    },
+    "home": {
+      "public": "chat/login",
+      "member": "chat/login"
+    },
+    "isDebug": 1,
+    "group_id": "4",
+    "chat_prefix": "test-",
+    "firebase": {
+      "apiKey": "AIzaSyB04JT4JJfFsArIccAjBEn1nwIlg8EVWx4",
+      "authDomain": "bigbang-online.firebaseapp.com",
+      "databaseURL": "https://bigbang-online.firebaseio.com/",
+      "storageBucket": "gs://bigbang-online.appspot.com/"
+    }
+  }
+}

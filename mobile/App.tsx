@@ -6,9 +6,9 @@ import { Provider } from 'react-redux'
 import { esp, _global } from 'esoftplay';
 import * as ErrorReport from 'esoftplay/error'
 import * as ErrorRecovery from 'expo-error-recovery';
-// import { enableScreens } from 'react-native-screens';
-
-// enableScreens();
+import './node_modules/esoftplay/timeout_fix'
+import { enableScreens } from 'react-native-screens';
+enableScreens();
 
 _global.store = createStore(esp.reducer())
 _global.persistor = persistStore(_global.store)

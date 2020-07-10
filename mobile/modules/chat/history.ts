@@ -4,16 +4,23 @@ import { ChatMain, usePersistState, esp } from 'esoftplay'
 import { useSelector } from 'react-redux'
 import { useEffect } from 'react'
 
-export default function m(): [any[], () => void, () => void] {
+export interface ChatHistoryReturn {
+  data: any[],
+  update: () => void,
+  deleteCache: () => void
+}
+
+
+export default function m(): ChatHistoryReturn {
   const main = ChatMain()
   const user = useSelector((s: any) => s.user_class)
   const group_id = esp.config("group_id")
-  const [data, setData, reData, delData] = usePersistState<any[]>("chat-history", [])
+  const [data, setData, reData, delData] = usePersistState<any[]>("chat_history", [])
 
   useEffect(get, [])
 
   function get() {
-    if (!user.hasOwnProperty("id")) return
+    if (!user || !user.hasOwnProperty("id")) return
     main.child("history").child(user.id).child(group_id).once('value', snapshoot => {
       if (!snapshoot.val())
         return
@@ -45,5 +52,9 @@ export default function m(): [any[], () => void, () => void] {
       })
     })
   }
-  return [data, get, delData]
+  return {
+    data: data,
+    update: get,
+    deleteCache: delData
+  }
 }

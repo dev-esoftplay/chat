@@ -1,119 +1,105 @@
 // withHooks
 
-import React, { useEffect } from 'react';
-import { View, InteractionManager, Text, TouchableOpacity } from 'react-native';
-import { LibUtils, LibNavigation, useSafeState, ChatMain, esp, LibLoading, LibIcon, ChatOnline_listener, ChatOpen_listener, ChatHeader, ChatOpen_setter, usePersistState } from 'esoftplay';
-import { useSelector } from 'react-redux';
-
+import React, { useEffect, useMemo } from 'react';
+import { LibUtils, ChatLib, esp, useSafeState, LibStyle, LibList, LibTextstyle, LibObject, LibLoading, ChatOnline_listener, ChatOpen_listener } from 'esoftplay';
+import AsyncStorage from '@react-native-community/async-storage';
+import { View } from 'react-native';
 
 export interface ChatChatProps {
 
 }
 
+function getCache(chat_id: string, callback: (cache: any) => void) {
+  AsyncStorage.getItem(chat_id, (error, result) => {
+    if (result)
+      callback(JSON.parse(result))
+    else
+      callback(null)
+  })
+}
+
+function setCache(chat_id: string, cache: any) {
+  AsyncStorage.setItem(chat_id, JSON.stringify(cache))
+}
 
 export default function m(props: ChatChatProps): any {
-  const main = ChatMain()
-  const user = useSelector((state: any) => state.user_class)
-  const [chat_id, setChat_id] = useSafeState(LibUtils.getArgs(props, "chat_id"))
-  const [chat_to] = useSafeState(LibUtils.getArgs(props, "chat_to"))
-  const [group_id] = useSafeState(LibUtils.getArgs(props, "group_id", esp.config("group_id")))
-  const [loading, setLoading] = useSafeState(true)
-  const [error, setError] = useSafeState("")
 
-  let exec
+  const args = LibUtils.getArgsAll(props)
+  const [chat_id, setChat_id] = useSafeState(args.chat_id)
+  const { chat_to, group_id } = args
+  const [hasNext, setHasNext] = useSafeState(true)
+  const chatLib = useMemo(() => new ChatLib(), [])
+  const [data, setData] = useSafeState<any>()
+  const [queryKeys, setQueryKeys] = useSafeState<string[]>([])
+  const [online] = ChatOnline_listener(chat_to)
+  const [openChat] = ChatOpen_listener(chat_id, chat_to)
+  const [opposite, setOpposite] = useSafeState<any>()
+
   useEffect(() => {
-    exec = InteractionManager.runAfterInteractions(async () => {
-      let error = ''
-      if (chat_to == undefined || chat_to == '') {
-        error = "Tujuan chat tidak ditemukan"
-      } else if (chat_to == user.id) {
-        error = "Tidak dapat mengirim pesan ke diri sendiri"
-      } else if (group_id == undefined || group_id == "") {
-        error = "Tujuan chat tidak valid"
-      }
-      if (error != '') {
-        setError(error)
-        return
-      }
-      setChat_id(await getChatId(chat_id))
-      setLoading(false)
-    })
-    return exec.cancel
-  }, [])
-
-
-  function getChatId(chat_id?: string): Promise<string> {
-    return new Promise((r) => {
-      if (chat_id && chat_id.length > 0) {
-        r(chat_id)
-      } else {
-        /* here we go */
-        if (!user.id) return
-        const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
-          main.child("history").child(id).child(group_id).once("value", snapshoot => {
-            if (snapshoot.val()) {
-              let s: any[] = Object.values(snapshoot).filter((s: any) => s.user_id == opposite_id)
-              if (s.length > 0) {
-                callback(s[0].chat_id)
-              } else {
-                callback("")
-              }
-            } else {
-              callback("")
-            }
+    let userListener: () => void
+    if (chat_id) {
+      getCache(chat_id, (chats) => {
+        if (chats) {
+          setData({ ...chats, ...data })
+          setQueryKeys(Object.keys(chats))
+        } else {
+          chatLib.chatGetAll(chat_id, '', (chats) => {
+            setData({ ...chats, ...data })
+            setCache(chat_id, { ...chats, ...data })
           })
         }
-        /* check my node */
-        check(user.id, chat_to, chat_id => {
-          if (chat_id) {
-            r(chat_id)
-          } else {
-            /* check opposite node */
-            check(chat_to, user.id, chat_id => {
-              r(chat_id)
-            })
-          }
-        })
-      }
-    })
+      })
+      userListener = chatLib.listenUser(chat_to, (opposite) => {
+        setOpposite(opposite)
+      })
+    }
+    return () => {
+      userListener()
+    }
+  }, [])
+
+  function loadBefore(lastKey: string) {
+    esp.log('CALLEDi');
+    if (!queryKeys.includes(lastKey)) {
+      esp.log('DHSKJDN');
+      chatLib.chatGetAll(chat_id, lastKey, (chats) => {
+        setQueryKeys(LibObject.push(queryKeys, lastKey)())
+        setData({ ...chats, ...data })
+        setCache(chat_id, { ...chats, ...data })
+      })
+    } else {
+      setHasNext(false)
+    }
   }
 
-  if (error != '')
-    return (
-      <View style={{ alignItems: "center", justifyContent: "center" }} >
-        <LibIcon.AntDesign name="closecircleo" color={'#444'} size={20} />
-        <Text style={{ color: "#444", textAlign: "center", fontSize: 14, marginVertical: 10 }} >{error}</Text>
-        <TouchableOpacity onPress={() => LibNavigation.back()} >
-          <Text style={{ color: "#444", textAlign: "center", fontSize: 14, fontWeight: "bold" }} >Kembali</Text>
-        </TouchableOpacity>
-      </View>
-    )
-
-  if (loading) return <LibLoading />
+  if (!data) {
+    return null
+  }
 
   return (
-    <InnerChat
-      chat_id={chat_id}
-      chat_to={chat_to}
-      group_id={group_id}
-    />
-  )
-}
-
-function InnerChat(props: any): any {
-  const { chat_id, chat_to, group_id } = props
-  ChatOpen_setter(chat_id)
-  const [onlineStatus] = ChatOnline_listener(chat_to)
-  const [openStatus] = ChatOpen_listener(chat_id, chat_to)
-  const [chats, setChats] = usePersistState("chats-" + chat_id, {})
-
-  return (
-    <View style={{ flex: 1 }} >
-      <ChatHeader />
+    <View style={{ flex: 1, paddingTop: LibStyle.STATUSBAR_HEIGHT }} >
+      {
+        opposite &&
+        <View>
+          <LibTextstyle text={opposite?.username} textStyle="body" />
+          <LibTextstyle text={online} textStyle="callout" />
+        </View>
+      }
+      {
+        !chat_id && (
+          <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }} >
+            <LibTextstyle textStyle="body" text="Belum ada pesan" />
+          </View>
+        )
+      }
+      <LibList
+        data={Object.values(data).reverse()}
+        onEndReached={() => loadBefore(Object.keys(data)[0])}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={() => hasNext ? <LibLoading /> : <LibTextstyle textStyle="footnote" text="all pages " />}
+        style={{ transform: [{ scaleY: -1 }], flex: 1 }}
+        renderItem={(x) => <LibTextstyle textStyle="body" text={x.msg + ' ' + x.time} style={{ margin: 17, transform: [{ scaleY: -1 }] }} />}
+      />
     </View>
   )
-}
-
-function InnerListChat(props: any) {
-
 }
