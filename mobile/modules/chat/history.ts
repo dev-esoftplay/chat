@@ -1,8 +1,8 @@
 // useLibs
 
-import { ChatMain, usePersistState, esp } from 'esoftplay'
+import { usePersistState, esp, ChatLib } from 'esoftplay'
 import { useSelector } from 'react-redux'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 export interface ChatHistoryReturn {
   data: any[],
@@ -12,18 +12,20 @@ export interface ChatHistoryReturn {
 
 
 export default function m(): ChatHistoryReturn {
-  const main = ChatMain()
+  const main = useMemo(() => new ChatLib().ref(), [])
   const user = useSelector((s: any) => s.user_class)
   const group_id = esp.config("group_id")
   const [data, setData, reData, delData] = usePersistState<any[]>("chat_history", [])
 
-  useEffect(get, [])
+  useEffect(() => {
+    const unsubsribe = get()
+    return () => unsubsribe()
+  }, [])
 
-  function get() {
-    if (!user || !user.hasOwnProperty("id")) return
-    main.child("history").child(user.id).child(group_id).once('value', snapshoot => {
-      if (!snapshoot.val())
-        return
+  function get(): () => void {
+    if (!user || !user.hasOwnProperty("id")) return () => { }
+    main.child("history").child(user.id).child(group_id).on('value', snapshoot => {
+      if (!snapshoot.val()) return
       let histories: any[] = []
       const keys = Object.keys(snapshoot.val())
       Object.values(snapshoot.val()).forEach((item: any) => {
@@ -51,6 +53,7 @@ export default function m(): ChatHistoryReturn {
         })
       })
     })
+    return () => main.child("history").child(user.id).child(group_id).off('value')
   }
   return {
     data: data,

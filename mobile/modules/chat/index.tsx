@@ -1,8 +1,8 @@
 // withHooks
 
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { ChatFirebase, esp, ChatHistory, LibFocus, LibList, LibTextstyle, LibCurl, ChatOnline_setter, LibStyle, ChatOpen, ChatOpenProperty } from 'esoftplay';
+import { View, TouchableOpacity } from 'react-native';
+import { ChatHistory, LibList, LibTextstyle, ChatOnline_setter, LibStyle, LibNavigation } from 'esoftplay';
 
 
 export interface ChatIndexProps {
@@ -19,12 +19,11 @@ export default function m(props: ChatIndexProps): any {
 
   return (
     <View style={{ flex: 1, paddingTop: LibStyle.STATUSBAR_HEIGHT }} >
-      <LibFocus onFocus={update} />
       <LibList
         data={data}
         renderItem={(item) => (
           <TouchableOpacity
-            onPress={() => ChatOpenProperty.now(item.chat_to, item.chat_id)}
+            onPress={() => LibNavigation.navigate('chat/chatting', { chat_to: item.chat_to })}
             style={{ paddingVertical: 10, paddingHorizontal: 17 }} >
             <LibTextstyle textStyle="body" text={item.username} />
             <LibTextstyle textStyle="footnote" text={item.msg} />

@@ -1,12 +1,12 @@
 // useLibs
 
-import React, { useEffect } from 'react'
-import { ChatMain } from 'esoftplay'
+import React, { useEffect, useMemo } from 'react'
+import { ChatLib } from 'esoftplay'
 import { useSelector } from 'react-redux'
 import { AppState } from 'react-native'
 
 export default function m() {
-  const main = ChatMain()
+  const main = useMemo(() => new ChatLib().ref(), [])
   const user = useSelector((s: any) => s.user_class)
   let time: any = undefined
 

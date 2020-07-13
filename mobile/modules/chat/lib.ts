@@ -7,7 +7,7 @@ export default class m {
   user: any = undefined
   group_id: string = "0"
   db: ChatFirebase
-  perPage: number = 30
+  perPage: number = 20
 
   constructor() {
     this.user = LibUtils.getReduxState("user_class")
@@ -21,10 +21,10 @@ export default class m {
     this.chatSendNew = this.chatSendNew.bind(this);
     this.chatUpdate = this.chatUpdate.bind(this);
     this.getChatId = this.getChatId.bind(this);
-    this.getRef = this.getRef.bind(this);
+    this.ref = this.ref.bind(this);
   }
 
-  getRef(): firebase.database.Reference {
+  ref(): firebase.database.Reference {
     return this.db.getMainRef()
   }
 
@@ -32,14 +32,16 @@ export default class m {
     if (!this.user) return
     let me = {
       chat_id: chat_id,
+      time: (new Date().getTime() / 1000).toFixed(0),
       user_id: chat_to
     }
     let notMe = {
       chat_id: chat_id,
+      time: (new Date().getTime() / 1000).toFixed(0),
       user_id: this.user.id
     }
-    this.db.getMainRef().child('history').child(this.user.id).child(this.group_id).push(me)
-    this.db.getMainRef().child('history').child(chat_to).child(this.group_id).push(notMe)
+    this.ref().child('history').child(this.user.id).child(this.group_id).push(me)
+    this.ref().child('history').child(chat_to).child(this.group_id).push(notMe)
   }
 
   chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
@@ -63,7 +65,7 @@ export default class m {
       is_typing: false,
       draf: ''
     }
-    let messageRef = this.getRef().child('chat').child(chat_id)
+    let messageRef = this.ref().child('chat').child(chat_id)
     const push = messageRef.child("conversation").push()
     msg.key = push.key
     push.set(msg)
@@ -77,10 +79,11 @@ export default class m {
 
   chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
     if (!this.user) return
+    const _time = (new Date().getTime() / 1000).toFixed(0)
     let msg: any = {
       msg: message,
       read: '0',
-      time: (new Date().getTime() / 1000).toFixed(0),
+      time: _time,
       user_id: this.user.id,
     }
     if (attach) {
@@ -91,7 +94,7 @@ export default class m {
       is_typing: false,
       draf: ''
     }
-    let messageRef = this.getRef().child('chat').child(chat_id)
+    let messageRef = this.ref().child('chat').child(chat_id)
     /* simpan pesan */
     const push = messageRef.child("conversation").push()
     msg.key = push.key
@@ -99,6 +102,12 @@ export default class m {
     /* set members */
     messageRef.child('member').child(this.user.id).set(member)
     messageRef.child('member').child(String(chat_to)).set(member)
+    // this.ref().child('history').child(this.user.id).child(this.group_id).orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
+    //   if (snapshoot.key) this.ref().child('history').child(this.user.id).child(this.group_id).child(snapshoot.key).child('time').set(_time)
+    // })
+    // this.ref().child('history').child(chat_to).child(this.group_id).orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
+    //   if (snapshoot.key) this.ref().child('history').child(this.user.id).child(this.group_id).child(snapshoot.key).child('time').set(_time)
+    // })
     if (callback) {
       callback(msg)
     }
@@ -106,7 +115,7 @@ export default class m {
 
   chatAll(chat_id: string, callback: (messages: any[]) => void, lastIndex?: string): void {
     if (!this.user) return
-    let msgRef = this.getRef().child('chat').child(chat_id).child("conversation").orderByKey()
+    let msgRef = this.ref().child('chat').child(chat_id).child("conversation").orderByKey()
     if (lastIndex) {
       msgRef = msgRef.endAt(lastIndex)
     }
@@ -119,7 +128,7 @@ export default class m {
           let item = snapshoot[key];
           a.push(item);
           if (item.user_id != this.user.id && item.read == 0) {
-            this.db.getMainRef().child('chat').child('conversation').child(key).child('read').set(1)
+            this.ref().child('chat').child('conversation').child(key).child('read').set(1)
           }
         });
         if (lastIndex) {
@@ -134,7 +143,7 @@ export default class m {
 
   chatGetAll(chat_id: string, lastKey: string, callback: (allmsg: any) => void): void {
     if (!this.user) return
-    let chatRef = this.db.getMainRef().child('chat').child(chat_id).child('conversation')
+    let chatRef = this.ref().child('chat').child(chat_id).child('conversation')
     if (lastKey) {
       chatRef.orderByKey().endAt(lastKey).limitToLast(this.perPage).once('value', snapshoot => {
         callback(snapshoot.val())
@@ -148,7 +157,7 @@ export default class m {
 
   chatListenAdd(chat_id: string, lastKey: string, callback: (message_item: any) => void): () => void {
     if (!this.user) return () => { }
-    const chatAddRef = this.db.getMainRef().child('chat').child(chat_id).child('conversation')
+    const chatAddRef = this.ref().child('chat').child(chat_id).child('conversation')
     if (lastKey) {
       chatAddRef.orderByKey().startAt(lastKey).on('child_added', snapshot => {
         callback(snapshot.val())
@@ -159,7 +168,7 @@ export default class m {
 
   chatListenChange(chat_id: string, callback: (message_item: any) => void): () => void {
     if (!this.user) return () => { }
-    const chatAddRef = this.db.getMainRef().child('chat').child(chat_id).child('conversation')
+    const chatAddRef = this.ref().child('chat').child(chat_id).child('conversation')
     chatAddRef.on('child_changed', (val) => {
       callback(val.val())
     })
@@ -169,11 +178,11 @@ export default class m {
   chatUpdate(key: string, chat_id: string, value: any): void {
     if (!key) return
     if (!this.user) return
-    this.db.getMainRef().child('chat').child(chat_id).child('conversation').child(key).set(value)
+    this.ref().child('chat').child(chat_id).child('conversation').child(key).set(value)
   }
 
   listenUser(user_id: string, callback: (user: any) => void): () => void {
-    const userRef = this.db.getMainRef().child('users').child(user_id)
+    const userRef = this.ref().child('users').child(user_id)
     userRef.on('value', snapshoot => {
       callback(snapshoot.val())
     })
@@ -182,14 +191,14 @@ export default class m {
 
   setUser(username?: string, image?: string): void {
     if (!this.user) return
-    this.db.getMainRef().child('users').child(this.user.id).child('username').set(LibUtils.ucwords(username || this.user.name))
-    this.db.getMainRef().child('users').child(this.user.id).child('image').set(image || this.user.image)
+    this.ref().child('users').child(this.user.id).child('username').set(LibUtils.ucwords(username || this.user.name))
+    this.ref().child('users').child(this.user.id).child('image').set(image || this.user.image)
   }
 
   getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
     if (!this.user) return
     const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
-      this.db.getMainRef().child('history').child(id).child(group_id || this.group_id).once('value', snapshoot => {
+      this.ref().child('history').child(id).child(group_id || this.group_id).once('value', snapshoot => {
         if (snapshoot.val()) {
           let s: any[] = Object.values(snapshoot.val()).filter((s: any) => s.user_id == opposite_id)
           if (s.length > 0) {
