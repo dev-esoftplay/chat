@@ -1,13 +1,13 @@
 const fs = require('fs');
 const shell = require('child_process').execSync;
 const merge = require('lodash/merge')
-import { moduleName } from "./index"
+const moduleName = "chat"
 
 /* copy directory */
 if (fs.existsSync('../esoftplay/esp.ts')) {
-  if (fs.existsSync('../esoftplay/modules/' + moduleName))
-    shell('rm -r ../esoftplay/modules/' + moduleName)
-  shell("cp -r ./" + moduleName + " ../esoftplay/modules/")
+  if (fs.existsSync('../esoftplay/modules/chat'))
+    shell('rm -r ../esoftplay/modules/chat')
+  shell("cp -r ./chat ../esoftplay/modules/")
 } else {
   throw "Mohon install esoftplay package terlebih dahulu"
 }
@@ -29,10 +29,10 @@ injectConfig("../../config.live.json")
 injectConfig("../../config.debug.json")
 
 /* move assets */
-if (fs.existsSync("./assets")) {
-  if (!fs.existsSync("../../assets/" + moduleName))
-    shell("mkdir -p ../../assets/" + moduleName)
-  shell("cp -r -n ./assets/* ../../assets/" + moduleName + "/")
+if (fs.existsSync("./assets/") && fs.existsSync("./assets/chat")) {
+  if (!fs.existsSync("../../assets/chat"))
+    shell("mkdir -p ../../assets/chat")
+  shell("cp -r -n ./assets/* ../../assets/chat/")
 }
 
 /* inject libs */
@@ -40,6 +40,8 @@ if (fs.existsSync("./libs.json")) {
   const libs = require("./libs.json")
   // shell()
   // console.log("mohon tunggu ..")
-  console.log("installing \n" + libs.join("\n"))
-  shell("cd ../../ && expo install " + libs.join(" && expo install "))
+  if (libs.length > 0) {
+    console.log("installing \n" + libs.join("\n"))
+    shell("cd ../../ && expo install " + libs.join(" && expo install "))
+  }
 }

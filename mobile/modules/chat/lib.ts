@@ -7,7 +7,7 @@ export default class m {
   user: any = undefined
   group_id: string = "0"
   db: ChatFirebase
-  perPage: number = 20
+  perPage: number = 10
 
   constructor() {
     this.user = LibUtils.getReduxState("user_class")
@@ -30,14 +30,15 @@ export default class m {
 
   historyNew(chat_id: string, chat_to: string): void {
     if (!this.user) return
+    const _time = (new Date().getTime() / 1000).toFixed(0)
     let me = {
       chat_id: chat_id,
-      time: (new Date().getTime() / 1000).toFixed(0),
+      time: _time,
       user_id: chat_to
     }
     let notMe = {
       chat_id: chat_id,
-      time: (new Date().getTime() / 1000).toFixed(0),
+      time: _time,
       user_id: this.user.id
     }
     this.ref().child('history').child(this.user.id).child(this.group_id).push(me)
@@ -102,12 +103,22 @@ export default class m {
     /* set members */
     messageRef.child('member').child(this.user.id).set(member)
     messageRef.child('member').child(String(chat_to)).set(member)
-    // this.ref().child('history').child(this.user.id).child(this.group_id).orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
-    //   if (snapshoot.key) this.ref().child('history').child(this.user.id).child(this.group_id).child(snapshoot.key).child('time').set(_time)
-    // })
-    // this.ref().child('history').child(chat_to).child(this.group_id).orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
-    //   if (snapshoot.key) this.ref().child('history').child(this.user.id).child(this.group_id).child(snapshoot.key).child('time').set(_time)
-    // })
+    const historyUserUpdate = this.ref().child('history').child(this.user.id).child(this.group_id)
+    historyUserUpdate.orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
+      try {
+        historyUserUpdate.child(String(Object.keys(snapshoot.val())[0])).child('time').set(_time)
+      } catch (error) {
+
+      }
+    })
+    const historyOppositeUpdate = this.ref().child('history').child(chat_to).child(this.group_id)
+    historyOppositeUpdate.orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
+      try {
+        historyOppositeUpdate.child(String(Object.keys(snapshoot.val())[0])).child('time').set(_time)
+      } catch (error) {
+
+      }
+    })
     if (callback) {
       callback(msg)
     }
@@ -158,11 +169,9 @@ export default class m {
   chatListenAdd(chat_id: string, lastKey: string, callback: (message_item: any) => void): () => void {
     if (!this.user) return () => { }
     const chatAddRef = this.ref().child('chat').child(chat_id).child('conversation')
-    if (lastKey) {
-      chatAddRef.orderByKey().startAt(lastKey).on('child_added', snapshot => {
-        callback(snapshot.val())
-      })
-    }
+    chatAddRef.orderByKey().startAt(lastKey).on('child_added', snapshot => {
+      callback(snapshot.val())
+    })
     return () => chatAddRef.off('child_added')
   }
 

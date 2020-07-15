@@ -1,8 +1,8 @@
 // publsiher
 
-import { moduleName } from "./index"
 const fs = require('fs');
 const shell = require('child_process').execSync;
+const moduleName = "chat"
 const assets = "assets/" + moduleName
 
 /* copy module */
