@@ -2,10 +2,10 @@
 
 
 import React, { useEffect, useMemo } from 'react'
-import { useSafeState, ChatLib } from 'esoftplay'
+import { useSafeState, ChattingLib } from 'esoftplay'
 
 export default function m(chat_id: string, chat_to: string): [number] {
-  const main = useMemo(() => new ChatLib().ref(), [])
+  const main = useMemo(() => new ChattingLib().ref(), [])
   const [status, setStatus] = useSafeState(0)
 
   useEffect(() => {

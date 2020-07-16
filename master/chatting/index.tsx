@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { ChatHistory, LibList, LibTextstyle, ChatOnline_setter, LibStyle, LibNavigation } from 'esoftplay';
+import { ChattingHistory, LibList, LibTextstyle, ChattingOnline_setter, LibStyle, LibNavigation } from 'esoftplay';
 
 
 export interface ChatIndexProps {
@@ -10,8 +10,8 @@ export interface ChatIndexProps {
 }
 
 export default function m(props: ChatIndexProps): any {
-  ChatOnline_setter()
-  const { data, update, deleteCache } = ChatHistory()
+  ChattingOnline_setter()
+  const { data, update, deleteCache } = ChattingHistory()
 
   useEffect(() => {
     update()

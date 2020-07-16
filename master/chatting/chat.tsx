@@ -1,7 +1,7 @@
 // useLibs
 
 import React, { useEffect, useMemo } from 'react';
-import { ChatLib, useSafeState, LibObject, ChatOnline_listener, ChatOpen_listener, LibCurl, LibNavigation, esp, ChatOpen_setter } from 'esoftplay';
+import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter } from 'esoftplay';
 import AsyncStorage from '@react-native-community/async-storage';
 import { InteractionManager } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -38,8 +38,7 @@ export interface ChattingItemAttachButton {
   enabled: string
 }
 
-
-export interface ChatChatProps {
+export interface ChattingChatProps {
   chat_to: string,
   group_id: string,
   chat_id: string
@@ -66,7 +65,7 @@ export interface ChatChatReturnUser {
 
 export interface ChatChatReturn {
   chat_id: string,
-  send: (message: string, attach?: any, callback?: (chat_id: string, message: string) => void) => void,
+  send: (message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void) => void,
   chat_to_user: ChatChatReturnUser,
   chat_to_online: string,
   loadPrevious: (firstKey: string) => void,
@@ -77,22 +76,23 @@ export interface ChatChatReturn {
   loading: boolean
 }
 
-export default function m(props: ChatChatProps): ChatChatReturn {
+let dataChat: any = {}
+export default function m(props: ChattingChatProps): ChatChatReturn {
   const user = useSelector((state: any) => state.user_class)
-  const chatLib = useMemo(() => new ChatLib(), [])
+  const chatLib = useMemo(() => new ChattingLib(), [])
   const [chat_id, setChat_id] = useSafeState(props.chat_id)
   const { chat_to } = props
   const group_id = props?.group_id || esp.config('group_id')
   const [hasNext, setHasNext] = useSafeState(true)
   const [data, setData] = useSafeState<any>()
-  const [queryKeys, setQueryKeys] = useSafeState<string[]>([])
   const [error, setError] = useSafeState("")
   const [loading, setLoading] = useSafeState(true)
-  const [online, opposite] = ChatOnline_listener(chat_to)
-  const [isOpenChat] = ChatOpen_listener(chat_id, chat_to)
+  const [isReady, setIsReady] = useSafeState(false)
+  const [online, opposite] = ChattingOnline_listener(chat_to)
+  const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
   let chatAddListener: any = undefined
   let chatChangeListener: any = undefined
-  ChatOpen_setter(chat_id)
+  ChattingOpen_setter(chat_id)
 
   useEffect(() => {
     let exec = InteractionManager.runAfterInteractions(async () => {
@@ -120,28 +120,49 @@ export default function m(props: ChatChatProps): ChatChatReturn {
   }, [])
 
   useEffect(() => {
-    if (chat_id && !loading && chatAddListener == undefined && chatChangeListener == undefined) {
+    if (chat_id && !loading) {
       getCache(chat_id, (chats) => {
         if (chats) {
           let keys = Object.keys(chats)
           const lastKey = chats[keys[keys.length - 1]].key
-          // setQueryKeys(Object.keys(chats))
-          setData(chats)
-          chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
-            const newChats = { ...data, [chat.key]: chat }
-            setData(newChats)
-            setCache(chat_id, newChats)
-          })
-          chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-            const newChats = { ...data, [chat.key]: chat }
-            setData(newChats)
-            setCache(chat_id, newChats)
-          })
+          dataChat = data || chats
+          if (chatAddListener == undefined && chatChangeListener == undefined) {
+            chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
+              if (!Object.keys(dataChat).includes(chat.key)) {
+                dataChat = { ...dataChat, [chat.key]: chat }
+                setData(dataChat)
+              }
+            })
+            chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
+              if (!Object.keys(dataChat).includes(chat.key)) {
+                dataChat = { ...dataChat, [chat.key]: chat }
+                setData(dataChat)
+              }
+            })
+          }
+          setIsReady(true)
+          setData(dataChat)
         } else {
           chatLib.chatGetAll(chat_id, '', (chats) => {
-            setData(chats)
-            setQueryKeys(Object.keys(chats))
-            setCache(chat_id, chats)
+            let keys = Object.keys(chats)
+            const lastKey = chats[keys[keys.length - 1]].key || ''
+            dataChat = data || chats
+            if (chatAddListener == undefined && chatChangeListener == undefined) {
+              chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
+                if (!Object.keys(dataChat).includes(chat.key)) {
+                  dataChat = { ...dataChat, [chat.key]: chat }
+                  setData(dataChat)
+                }
+              })
+              chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
+                if (!Object.keys(dataChat).includes(chat.key)) {
+                  dataChat = { ...dataChat, [chat.key]: chat }
+                  setData(dataChat)
+                }
+              })
+            }
+            setData(dataChat)
+            setIsReady(true)
           })
         }
       })
@@ -152,16 +173,17 @@ export default function m(props: ChatChatProps): ChatChatReturn {
     }
   }, [chat_id, loading])
 
+  useEffect(() => {
+    if (data) {
+      setCache(chat_id, data)
+    }
+  }, [data])
+
   function loadPrevious(lastKey: string) {
-    if (!queryKeys.includes(lastKey)) {
+    if (isReady && lastKey) {
       chatLib.chatGetAll(chat_id, lastKey, (chats) => {
-        const allKeys = LibObject.push(queryKeys, lastKey)()
-        if (allKeys.length == queryKeys.length) {
-          setHasNext(false)
-        }
-        setQueryKeys(allKeys)
-        setData({ ...chats, ...data })
-        setCache(chat_id, { ...chats, ...data })
+        dataChat = { ...chats, ...dataChat }
+        setData(dataChat)
       })
     } else {
       setHasNext(false)
@@ -169,7 +191,7 @@ export default function m(props: ChatChatProps): ChatChatReturn {
   }
 
   function setNotif(chat_id: string, message: string): void {
-    if (isOpenChat) {
+    if (!isOpenChat) {
       new LibCurl('user_notif_chat', {
         chat_id: chat_id,
         chat_from: user.id,
@@ -180,17 +202,17 @@ export default function m(props: ChatChatProps): ChatChatReturn {
     }
   }
 
-  function send(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: string) => void) {
+  function send(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void) {
     if (chat_id) {
-      chatLib.chatSend(chat_id, chat_to, message, attach, (msg) => {
-        callback && callback(chat_id, message)
-        setNotif(chat_id, message)
+      chatLib.chatSend(chat_id, chat_to, message, attach, (msg: ChattingItem) => {
+        callback && callback(chat_id, msg)
+        setNotif(chat_id, msg.msg)
       })
     } else {
-      chatLib.chatSendNew(chat_to, message, attach, true, (message: string, chat_id: string) => {
+      chatLib.chatSendNew(chat_to, message, attach, true, (msg: ChattingItem, chat_id: string) => {
+        callback && callback(chat_id, msg)
+        setNotif(chat_id, msg.msg)
         setChat_id(chat_id)
-        callback && callback(chat_id, message)
-        setNotif(chat_id, message)
       })
     }
   }
@@ -198,7 +220,7 @@ export default function m(props: ChatChatProps): ChatChatReturn {
   return {
     chat_id: chat_id,
     // @ts-ignore
-    conversation: (data && Object.values(data) || []).reverse(),
+    conversation: (Object.values(data || {}) || []).reverse(),
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,

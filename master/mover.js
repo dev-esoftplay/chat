@@ -1,13 +1,13 @@
 const fs = require('fs');
 const shell = require('child_process').execSync;
 const merge = require('lodash/merge')
-const moduleName = "chat"
+const moduleName = "chatting"
 
 /* copy directory */
 if (fs.existsSync('../esoftplay/esp.ts')) {
-  if (fs.existsSync('../esoftplay/modules/chat'))
-    shell('rm -r ../esoftplay/modules/chat')
-  shell("cp -r ./chat ../esoftplay/modules/")
+  if (fs.existsSync('../esoftplay/modules/chatting'))
+    shell('rm -r ../esoftplay/modules/chatting')
+  shell("cp -r ./chatting ../esoftplay/modules/")
 } else {
   throw "Mohon install esoftplay package terlebih dahulu"
 }
@@ -22,17 +22,17 @@ function injectConfig(configPath) {
   }
 }
 /*
-  untuk menambahkan default config["chat"] pada main project otomatis saat install esoftplay-chat
+  untuk menambahkan default config["chatting"] pada main project otomatis saat install esoftplay-chatting
 */
 injectConfig("../../config.json")
 injectConfig("../../config.live.json")
 injectConfig("../../config.debug.json")
 
 /* move assets */
-if (fs.existsSync("./assets/") && fs.existsSync("./assets/chat")) {
-  if (!fs.existsSync("../../assets/chat"))
-    shell("mkdir -p ../../assets/chat")
-  shell("cp -r -n ./assets/* ../../assets/chat/")
+if (fs.existsSync("./assets/") && fs.existsSync("./assets/chatting")) {
+  if (!fs.existsSync("../../assets/chatting"))
+    shell("mkdir -p ../../assets/chatting")
+  shell("cp -r -n ./assets/* ../../assets/chatting/")
 }
 
 /* inject libs */

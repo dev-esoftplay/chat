@@ -1,20 +1,20 @@
 import React from 'react'
-import { LibUtils, esp, ChatFirebase } from 'esoftplay';
+import { LibUtils, esp, ChattingFirebase } from 'esoftplay';
 import { Alert } from 'react-native';
 
 
 export default class m {
   user: any = undefined
   group_id: string = "0"
-  db: ChatFirebase
+  db: ChattingFirebase
   perPage: number = 10
 
   constructor() {
     this.user = LibUtils.getReduxState("user_class")
-    this.db = new ChatFirebase(esp.config('chat_prefix') + 'chat')
+    this.db = new ChattingFirebase(esp.config('chat_prefix') + 'chat')
     this.group_id = esp.config('group_id') || '4'
     this.historyNew = this.historyNew.bind(this);
-    this.chatAll = this.chatAll.bind(this);
+    // this.chatAll = this.chatAll.bind(this);
     this.chatListenAdd = this.chatListenAdd.bind(this);
     this.chatListenChange = this.chatListenChange.bind(this);
     this.chatSend = this.chatSend.bind(this);

@@ -1,12 +1,12 @@
 // useLibs
 
 import React, { useEffect, useMemo } from 'react'
-import { useSafeState, ChatLib } from 'esoftplay'
+import { useSafeState, ChattingLib } from 'esoftplay'
 import moment from 'moment/min/moment-with-locales'
 moment.locale('id')
 
 export default function m(chat_to: string): [string, any] {
-  const main = useMemo(() => new ChatLib().ref(), [])
+  const main = useMemo(() => new ChattingLib().ref(), [])
   const [status, setStatus] = useSafeState<string>("Loading...")
   const [opposite, setOpposite] = useSafeState<string>("Loading...")
 

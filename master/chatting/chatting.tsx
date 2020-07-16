@@ -2,12 +2,12 @@
 
 import React, { useRef } from 'react';
 import { View } from 'react-native';
-import { LibInput, LibList, ChatChat, LibUtils, LibTextstyle, ChattingItem, LibLoading, esp } from 'esoftplay';
+import { LibInput, LibList, ChattingChat, LibUtils, LibTextstyle, ChattingItem, LibLoading, esp } from 'esoftplay';
 
-export interface ChatChattingProps {
+export interface ChattingChattingProps {
 
 }
-export default function m(props: ChatChattingProps): any {
+export default function m(props: ChattingChattingProps): any {
   const inputMsg = useRef<LibInput>(null)
   const {
     loading,
@@ -20,7 +20,7 @@ export default function m(props: ChatChattingProps): any {
     chat_to_user,
     chat_to_online,
     send
-  } = ChatChat(LibUtils.getArgsAll(props))
+  } = ChattingChat(LibUtils.getArgsAll(props))
 
   return (
     <View style={{ flex: 1 }} >
@@ -36,7 +36,7 @@ export default function m(props: ChatChattingProps): any {
             <LibList
               data={conversation}
               style={{ transform: [{ scaleY: - 1 }] }}
-              onEndReached={() => hasPrevious ? loadPrevious(firstKey) : {}}
+              onEndReached={() => loadPrevious(firstKey)}
               onEndReachedThreshold={1}
               renderItem={(item: ChattingItem) => (
                 <View style={{ transform: [{ scaleY: - 1 }] }} >

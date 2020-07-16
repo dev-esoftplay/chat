@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { View, Alert, TouchableOpacity } from 'react-native';
-import { LibProgress, LibCurl, LibCrypt, UserClass, LibNavigation, ChatLib, LibIcon, LibImage, esp } from 'esoftplay';
+import { LibProgress, LibCurl, LibCrypt, UserClass, LibNavigation, ChattingLib, LibIcon, LibImage, esp } from 'esoftplay';
 
 
 export interface ChatLoginProps {
@@ -20,13 +20,13 @@ export default function m(props: ChatLoginProps): any {
         UserClass.create(res).then(() => {
           LibProgress.hide()
           LibNavigation.reset('chat/index')
-          new ChatLib().setUser()
+          new ChattingLib().setUser()
         })
       },
       (msg) => {
         LibProgress.hide()
         Alert.alert('Kesalahan', msg)
-      })
+      }, 1)
   }, [])
 
   return (

@@ -1,6 +1,6 @@
 {
-  "name": "esoftplay-chat",
-  "version": "0.0.1-h",
+  "name": "esoftplay-chatting",
+  "version": "0.0.1-a",
   "description": "chat module on esoftplay framework",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "postinstall": "node ./mover.js"
   },
   "keywords": [
-    "espftplay-chat",
+    "esoftplay-chatting",
     "esoftplay"
   ],
   "author": "kholil@fisip.net",

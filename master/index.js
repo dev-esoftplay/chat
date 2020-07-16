@@ -1,1 +1,1 @@
-export const moduleName = "chat"
+export const moduleName = "chatting"

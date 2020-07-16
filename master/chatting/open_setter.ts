@@ -1,19 +1,19 @@
 // useLibs
 
 import React, { useEffect, useMemo } from 'react'
-import { ChatLib } from 'esoftplay'
+import { ChattingLib } from 'esoftplay'
 import { useSelector } from 'react-redux'
 import { AppState } from 'react-native'
 
-export default function m() {
-  const main = useMemo(() => new ChatLib().ref(), [])
+export default function m(chat_id: string) {
+  const main = useMemo(() => new ChattingLib().ref(), [])
   const user = useSelector((s: any) => s.user_class)
   let time: any = undefined
 
   function set() {
-    if (user && user.hasOwnProperty("id")) {
+    if (chat_id) {
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      main.child("users").child(user.id).child("online").set(timestamp)
+      main.child("chat").child(chat_id).child("member").child(user.id).child("is_open").set(timestamp)
     }
   }
 
@@ -33,5 +33,5 @@ export default function m() {
       if (time) clearInterval(time)
       AppState.removeEventListener("change", onAppStateChange)
     }
-  }, [])
+  }, [chat_id])
 }
