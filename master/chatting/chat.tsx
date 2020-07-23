@@ -5,6 +5,9 @@ import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listen
 import AsyncStorage from '@react-native-community/async-storage';
 import { InteractionManager } from 'react-native';
 import { useSelector } from 'react-redux';
+// @ts-ignore
+import moment from 'moment/min/moment-with-locales'
+moment.locale('id')
 
 export interface ChattingItem {
   key: string,
@@ -95,7 +98,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   ChattingOpen_setter(chat_id)
 
   useEffect(() => {
-    let exec = InteractionManager.runAfterInteractions(async () => {
+    let exec = setTimeout(async () => {
       let error = ''
       if (chat_to == undefined || chat_to == '') {
         error = "Tujuan chat tidak ditemukan"
@@ -115,9 +118,16 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         })
       else
         setLoading(false)
-    })
-    return () => exec.cancel()
+    }, 0)
+    return () => clearTimeout(exec)
   }, [])
+
+
+  function setRead(chat: any) {
+    if (chat.user_id != user.id && chat.read == 0) {
+      chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set(1)
+    }
+  }
 
   useEffect(() => {
     if (chat_id && !loading) {
@@ -131,13 +141,13 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
               if (!Object.keys(dataChat).includes(chat.key)) {
                 dataChat = { ...dataChat, [chat.key]: chat }
                 setData(dataChat)
+                setRead(chat)
               }
             })
             chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-              if (!Object.keys(dataChat).includes(chat.key)) {
-                dataChat = { ...dataChat, [chat.key]: chat }
-                setData(dataChat)
-              }
+              dataChat[chat.key] = chat
+              setData({ ...dataChat })
+              setRead(chat)
             })
           }
           setIsReady(true)
@@ -152,13 +162,13 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
                 if (!Object.keys(dataChat).includes(chat.key)) {
                   dataChat = { ...dataChat, [chat.key]: chat }
                   setData(dataChat)
+                  setRead(chat)
                 }
               })
               chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-                if (!Object.keys(dataChat).includes(chat.key)) {
-                  dataChat = { ...dataChat, [chat.key]: chat }
-                  setData(dataChat)
-                }
+                dataChat[chat.key] = chat
+                setData({ ...dataChat })
+                setRead(chat)
               })
             }
             setData(dataChat)
