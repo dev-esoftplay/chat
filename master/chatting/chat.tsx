@@ -1,7 +1,7 @@
 // useLibs
 
 import React, { useEffect, useMemo } from 'react';
-import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter } from 'esoftplay';
+import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter, ChattingHistory } from 'esoftplay';
 import AsyncStorage from '@react-native-community/async-storage';
 import { InteractionManager } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -81,6 +81,7 @@ export interface ChatChatReturn {
 
 let dataChat: any = {}
 export default function m(props: ChattingChatProps): ChatChatReturn {
+  const { update } = ChattingHistory()
   const user = useSelector((state: any) => state.user_class)
   const chatLib = useMemo(() => new ChattingLib(), [])
   const [chat_id, setChat_id] = useSafeState(props.chat_id)
@@ -186,6 +187,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   useEffect(() => {
     if (data) {
       setCache(chat_id, data)
+      update()
     }
   }, [data])
 

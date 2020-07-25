@@ -1,6 +1,6 @@
 // useLibs
 
-import { usePersistState, esp, ChattingLib } from 'esoftplay'
+import { usePersistState, esp, ChattingLib, useGlobalState, useGlobalReturn } from 'esoftplay'
 import { useSelector } from 'react-redux'
 import { useEffect, useMemo } from 'react'
 
@@ -11,12 +11,15 @@ export interface ChatHistoryReturn {
   unread: number
 }
 
-
+const cattingHistory = useGlobalState<any[]>([], { persistKey: 'chat_history' })
+export function state(): useGlobalReturn<any[]> {
+  return cattingHistory
+}
 export default function m(): ChatHistoryReturn {
   const main = useMemo(() => new ChattingLib().ref(), [])
+  const [data, setData, delData] = state().useState()
   const user = useSelector((s: any) => s.user_class)
   const group_id = esp.config("group_id")
-  const [data, setData, reData, delData] = usePersistState<any[]>("chat_history", [])
 
   useEffect(() => {
     let unsubsribe: any
