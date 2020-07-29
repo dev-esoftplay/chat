@@ -155,22 +155,24 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
           setData(dataChat)
         } else {
           chatLib.chatGetAll(chat_id, '', (chats) => {
-            let keys = Object.keys(chats)
-            const lastKey = chats[keys[keys.length - 1]].key || ''
-            dataChat = data || chats
-            if (chatAddListener == undefined && chatChangeListener == undefined) {
-              chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
-                if (!Object.keys(dataChat).includes(chat.key)) {
-                  dataChat = { ...dataChat, [chat.key]: chat }
-                  setData(dataChat)
+            if (chats) {
+              let keys = Object.keys(chats)
+              const lastKey = chats[keys[keys.length - 1]].key || ''
+              dataChat = data || chats
+              if (chatAddListener == undefined && chatChangeListener == undefined) {
+                chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
+                  if (!Object.keys(dataChat).includes(chat.key)) {
+                    dataChat = { ...dataChat, [chat.key]: chat }
+                    setData(dataChat)
+                    setRead(chat)
+                  }
+                })
+                chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
+                  dataChat[chat.key] = chat
+                  setData({ ...dataChat })
                   setRead(chat)
-                }
-              })
-              chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-                dataChat[chat.key] = chat
-                setData({ ...dataChat })
-                setRead(chat)
-              })
+                })
+              }
             }
             setData(dataChat)
             setIsReady(true)
