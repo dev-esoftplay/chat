@@ -5,7 +5,7 @@ import { ChattingLib } from 'esoftplay'
 import { useSelector } from 'react-redux'
 import { AppState } from 'react-native'
 
-export default function m(chat_id: string) {
+export default function m(chat_id: string): void {
   const main = useMemo(() => new ChattingLib().ref(), [])
   const user = useSelector((s: any) => s.user_class)
   let time: any = undefined

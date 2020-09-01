@@ -38,7 +38,7 @@ export interface ChattingItemAttachButton {
   module?: string,
   data?: any,
   url: string,
-  enabled: string
+  enabled: boolean
 }
 
 export interface ChattingChatProps {
