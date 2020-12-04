@@ -103,7 +103,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
       let error = ''
       if (chat_to == undefined || chat_to == '') {
         error = "Tujuan chat tidak ditemukan"
-      } else if (chat_to == user.id) {
+      } else if (chat_to == user?.id) {
         error = "Tidak dapat mengirim pesan ke diri sendiri"
       } else if (group_id == undefined || group_id == "") {
         error = "Tujuan chat tidak valid"
@@ -125,7 +125,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
 
   function setRead(chat: any) {
-    if (chat.user_id != user.id && chat.read == 0) {
+    if (chat.user_id != user?.id && chat.read == 0) {
       chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set(1)
     }
   }
@@ -208,7 +208,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!isOpenChat) {
       new LibCurl('user_notif_chat', {
         chat_id: chat_id,
-        chat_from: user.id,
+        chat_from: user?.id,
         chat_to: chat_to,
         group_id: group_id,
         message: message

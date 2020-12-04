@@ -13,7 +13,7 @@ export default function m(chat_id: string): void {
   function set() {
     if (chat_id) {
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      main.child("chat").child(chat_id).child("member").child(user.id).child("is_open").set(timestamp)
+      main.child("chat").child(chat_id).child("member").child(user?.id).child("is_open").set(timestamp)
     }
   }
 

@@ -64,12 +64,12 @@ export default function m(): ChatHistoryReturn {
 
   function get(): () => void {
     if (!user || !user.hasOwnProperty("id")) return () => { }
-    main.child("history").child(user.id).child(group_id).off('value')
-    main.child("history").child(user.id).child(group_id).on('value', snapshoot => {
+    main.child("history").child(user?.id).child(group_id).off('value')
+    main.child("history").child(user?.id).child(group_id).on('value', snapshoot => {
       if (!snapshoot.val()) return
       update(snapshoot.val())
     })
-    return () => main.child("history").child(user.id).child(group_id).off('value')
+    return () => main.child("history").child(user?.id).child(group_id).off('value')
   }
 
   return {

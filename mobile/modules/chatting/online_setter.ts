@@ -13,7 +13,7 @@ export default function m(): void {
   function set() {
     if (user && user.hasOwnProperty("id")) {
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      main.child("users").child(user.id).child("online").set(timestamp)
+      main.child("users").child(user?.id).child("online").set(timestamp)
     }
   }
 

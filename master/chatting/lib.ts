@@ -39,15 +39,15 @@ export default class m {
     let notMe = {
       chat_id: chat_id,
       time: _time,
-      user_id: this.user.id
+      user_id: this.user?.id
     }
-    this.ref().child('history').child(this.user.id).child(this.group_id).push(me)
+    this.ref().child('history').child(this.user?.id).child(this.group_id).push(me)
     this.ref().child('history').child(chat_to).child(this.group_id).push(notMe)
   }
 
   chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
     if (!this.user) return
-    if (this.user.id == chat_to) {
+    if (this.user?.id == chat_to) {
       Alert.alert('Oops..!', 'Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri')
       return
     }
@@ -56,7 +56,7 @@ export default class m {
       msg: message,
       read: '0',
       time: chat_id,
-      user_id: this.user.id,
+      user_id: this.user?.id,
     }
     if (attach) {
       msg['attach'] = attach
@@ -71,7 +71,7 @@ export default class m {
     msg.key = push.key
     push.set(msg)
     /* me */
-    messageRef.child('member').child(this.user.id).set(member)
+    messageRef.child('member').child(this.user?.id).set(member)
     /* notMe */
     messageRef.child('member').child(chat_to).set(member)
     if (callback) callback(msg, chat_id)
@@ -85,7 +85,7 @@ export default class m {
       msg: message,
       read: '0',
       time: _time,
-      user_id: this.user.id,
+      user_id: this.user?.id,
     }
     if (attach) {
       msg['attach'] = attach
@@ -101,9 +101,9 @@ export default class m {
     msg.key = push.key
     push.set(msg)
     /* set members */
-    messageRef.child('member').child(this.user.id).set(member)
+    messageRef.child('member').child(this.user?.id).set(member)
     messageRef.child('member').child(String(chat_to)).set(member)
-    const historyUserUpdate = this.ref().child('history').child(this.user.id).child(this.group_id)
+    const historyUserUpdate = this.ref().child('history').child(this.user?.id).child(this.group_id)
     historyUserUpdate.orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
       try {
         historyUserUpdate.child(String(Object.keys(snapshoot.val())[0])).child('time').set(_time)
@@ -138,7 +138,7 @@ export default class m {
         Object.keys(snapshoot).map(key => {
           let item = snapshoot[key];
           a.push(item);
-          if (item.user_id != this.user.id && item.read == 0) {
+          if (item.user_id != this.user?.id && item.read == 0) {
             this.ref().child('chat').child('conversation').child(key).child('read').set(1)
           }
         });
@@ -200,8 +200,8 @@ export default class m {
 
   setUser(username?: string, image?: string): void {
     if (!this.user) return
-    this.ref().child('users').child(this.user.id).child('username').set(LibUtils.ucwords(username || this.user.name))
-    this.ref().child('users').child(this.user.id).child('image').set(image || this.user.image)
+    this.ref().child('users').child(this.user?.id).child('username').set(LibUtils.ucwords(username || this.user.name))
+    this.ref().child('users').child(this.user?.id).child('image').set(image || this.user.image)
   }
 
   getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
@@ -221,12 +221,12 @@ export default class m {
       })
     }
     /* check my node */
-    check(this.user.id, chat_to, chat_id => {
+    check(this.user?.id, chat_to, chat_id => {
       if (chat_id) {
         callback(chat_id)
       } else {
         /* check opposite node */
-        check(chat_to, this.user.id, chat_id => {
+        check(chat_to, this.user?.id, chat_id => {
           callback(chat_id)
         })
       }
