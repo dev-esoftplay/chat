@@ -181,10 +181,17 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
       })
     }
     return () => {
-      if (chatAddListener) chatAddListener()
-      if (chatChangeListener) chatChangeListener()
+      if (chatAddListener) {
+        chatAddListener()
+        chatAddListener = undefined
+      }
+      if (chatChangeListener) {
+        chatChangeListener()
+        chatChangeListener = undefined
+      }
     }
   }, [chat_id, loading])
+
 
   useEffect(() => {
     if (data) {
