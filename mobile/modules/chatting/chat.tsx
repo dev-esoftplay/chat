@@ -63,7 +63,8 @@ function setCache(chat_id: string, cache: any) {
 export interface ChatChatReturnUser {
   username: string,
   image: string,
-  online: string
+  online: string,
+  deleted: 0 | 1
 }
 
 export interface ChatChatReturn {

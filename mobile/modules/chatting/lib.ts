@@ -198,10 +198,11 @@ export default class m {
     return () => userRef.off('value')
   }
 
-  setUser(username?: string, image?: string): void {
+  setUser(username?: string, image?: string, deleted?: boolean): void {
     if (!this.user) return
     this.ref().child('users').child(this.user?.id).child('username').set(LibUtils.ucwords(username || this.user.name))
     this.ref().child('users').child(this.user?.id).child('image').set(image || this.user.image)
+    this.ref().child('users').child(this.user?.id).child('deleted').set(deleted ? 1 : 0)
   }
 
   getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
