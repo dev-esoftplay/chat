@@ -24,6 +24,7 @@ export interface ChattingItemAttach {
   url?: string,
   title?: string,
   data?: any,
+  type?: string,
   buttons?: ChattingItemAttachButtons
 }
 
