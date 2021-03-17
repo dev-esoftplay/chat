@@ -106,11 +106,11 @@ export default class m {
     /* set members */
     messageRef.child('member').child(this.user?.id).set(member)
     messageRef.child('member').child(String(chat_to)).set(member)
-    console.log(this.user?.id, this.group_id, chat_to, this.group_id, _time)
+    // console.log(this.user?.id, this.group_id, chat_to, this.group_id, _time)
     const historyUserUpdate = this.ref().child('history').child(this.user?.id).child(this.group_id)
     historyUserUpdate.orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
       try {
-        console.log(String(Object.keys(snapshoot.val())[0]), 'mine')
+        // console.log(String(Object.keys(snapshoot.val())[0]), 'mine')
         historyUserUpdate.child(String(Object.keys(snapshoot.val())[0])).child('time').set(_time)
       } catch (error) {
 
@@ -120,7 +120,7 @@ export default class m {
     const historyOppositeUpdate = this.ref().child('history').child(chat_to).child(this.group_id)
     historyOppositeUpdate.orderByChild("chat_id").equalTo(chat_id).once('value', snapshoot => {
       try {
-        console.log(String(Object.keys(snapshoot.val())[0]), 'opposite')
+        // console.log(String(Object.keys(snapshoot.val())[0]), 'opposite')
         historyOppositeUpdate.child(String(Object.keys(snapshoot.val())[0])).child('time').set(_time)
       } catch (error) {
 

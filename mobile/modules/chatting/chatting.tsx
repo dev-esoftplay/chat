@@ -50,7 +50,7 @@ export default function m(props: ChattingChattingProps): any {
         label="Pesan"
         ref={inputMsg}
         onSubmitEditing={() => send(inputMsg.current!.getText(), undefined, (chat_id, message) => {
-          esp.log(chat_id, message);
+          // esp.log(chat_id, message);
         })}
       />
     </View>
