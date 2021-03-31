@@ -2,6 +2,8 @@
 .expo*/
 index.d.ts
 config.json
+config.debug.json
+config.live.json
 node_modules/
 npm-debug.*
 package-lock.json

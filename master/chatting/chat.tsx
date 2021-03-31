@@ -1,9 +1,8 @@
 // useLibs
 
 import React, { useEffect, useMemo } from 'react';
-import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter, ChattingHistory, UserData } from 'esoftplay';
+import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter, ChattingHistory, UserData, UserClass } from 'esoftplay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSelector } from 'react-redux';
 // @ts-ignore
 import moment from 'moment/min/moment-with-locales'
 moment.locale('id')
@@ -85,7 +84,7 @@ let chatAddListener: any = undefined
 let chatChangeListener: any = undefined
 export default function m(props: ChattingChatProps): ChatChatReturn {
   const { update } = ChattingHistory()
-  const user = useSelector((state: any) => state.user_class)
+  const user = UserClass.state().useSelector(s => s)
   const chatLib = useMemo(() => new ChattingLib(), [])
   const [chat_id, setChat_id] = useSafeState(props.chat_id)
   const { chat_to } = props
