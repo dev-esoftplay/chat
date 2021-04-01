@@ -1,6 +1,6 @@
 // useLibs
 
-import { usePersistState, esp, ChattingLib, useGlobalState, useGlobalReturn, UserClass } from 'esoftplay'
+import { esp, ChattingLib, useGlobalState, useGlobalReturn, UserClass } from 'esoftplay'
 import { useEffect, useMemo } from 'react'
 
 export interface ChatHistoryReturn {
