@@ -1,6 +1,6 @@
 // useLibs
 
-import { esp, ChattingLib, useGlobalState, useGlobalReturn, UserClass } from 'esoftplay'
+import { usePersistState, esp, ChattingLib, useGlobalState, useGlobalReturn, UserClass } from 'esoftplay'
 import { useEffect, useMemo } from 'react'
 
 export interface ChatHistoryReturn {
@@ -75,6 +75,6 @@ export default function m(): ChatHistoryReturn {
     data: data,
     update: get,
     deleteCache: delData,
-    unread: data.filter((x => x.read == 0)).length
+    unread: data?.filter?.((x => x.read == 0)).length
   }
 }
