@@ -145,8 +145,8 @@ export default class m {
         Object.keys(snapshoot).map(key => {
           let item = snapshoot[key];
           a.push(item);
-          if (item.user_id != this.user?.id && item.read == 0) {
-            this.ref().child('chat').child('conversation').child(key).child('read').set(1)
+          if (String(item.user_id) != String(this.user?.id) && String(item.read) == '0') {
+            this.ref().child('chat').child('conversation').child(key).child('read').set('1')
           }
         });
         if (lastIndex) {

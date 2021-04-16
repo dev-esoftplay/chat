@@ -126,8 +126,8 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
 
   function setRead(chat: any) {
-    if (chat.user_id != user?.id && chat.read == 0) {
-      chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set(1)
+    if (String(chat.user_id) != String(user?.id) && String(chat.read) == '0') {
+      chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set('1')
     }
   }
 
@@ -141,15 +141,15 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
           if (chatAddListener == undefined && chatChangeListener == undefined) {
             chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
               if (!Object.keys(dataChat).includes(chat.key)) {
+                setRead(chat)
                 dataChat = { ...dataChat, [chat.key]: chat }
                 setData(dataChat)
-                setRead(chat)
               }
             })
             chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
+              setRead(chat)
               dataChat[chat.key] = chat
               setData({ ...dataChat })
-              setRead(chat)
             })
           }
           setIsReady(true)
@@ -163,15 +163,15 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
               if (chatAddListener == undefined && chatChangeListener == undefined) {
                 chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
                   if (!Object.keys(dataChat).includes(chat.key)) {
+                    setRead(chat)
                     dataChat = { ...dataChat, [chat.key]: chat }
                     setData(dataChat)
-                    setRead(chat)
                   }
                 })
                 chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
+                  setRead(chat)
                   dataChat[chat.key] = chat
                   setData({ ...dataChat })
-                  setRead(chat)
                 })
               }
             }
