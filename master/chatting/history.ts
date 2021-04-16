@@ -44,7 +44,7 @@ export default function m(): ChatHistoryReturn {
           item['chat_to'] = opposite_id
           item['msg'] = _snapshoot.msg
           item['time'] = _snapshoot.time
-          item['read'] = _snapshoot.read
+          item['read'] = _snapshoot.user_id == opposite_id ? _snapshoot.read : '1'
           main.child('users').child(opposite_id).once('value', snapshoot => {
             histories.push({ ...item, ...snapshoot.val() })
             if (Object.keys(hist).length == histories.length) {
