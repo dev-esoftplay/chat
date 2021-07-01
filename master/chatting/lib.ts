@@ -21,6 +21,7 @@ export default class m {
     this.chatUpdate = this.chatUpdate.bind(this);
     this.getChatId = this.getChatId.bind(this);
     this.chatAll = this.chatAll.bind(this)
+    this.chatGet = this.chatGet.bind(this)
     this.chatGetAll = this.chatGetAll.bind(this)
     this.listenUser = this.listenUser.bind(this)
     this.setUser = this.setUser.bind(this)
@@ -157,6 +158,11 @@ export default class m {
         callback(a)
       }
     })
+  }
+
+  chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
+    if (!this.user) return
+    this.ref().child('chat').child(chat_id).child('conversation').child(key).once('value', s => callback(s.val()))
   }
 
   chatGetAll(chat_id: string, lastKey: string, callback: (allmsg: any) => void): void {
