@@ -13,19 +13,20 @@ export default class m {
     this.user = UserClass.state().get()
     this.db = new ChattingFirebase(esp.config('chat_prefix') + 'chat')
     this.group_id = esp.config('group_id') || '4'
-    this.historyNew = this.historyNew.bind(this);
+    this.chatAll = this.chatAll.bind(this)
+    this.chatDelete = this.chatDelete.bind(this)
+    this.chatGet = this.chatGet.bind(this)
+    this.chatGetAll = this.chatGetAll.bind(this)
     this.chatListenAdd = this.chatListenAdd.bind(this);
     this.chatListenChange = this.chatListenChange.bind(this);
     this.chatSend = this.chatSend.bind(this);
     this.chatSendNew = this.chatSendNew.bind(this);
     this.chatUpdate = this.chatUpdate.bind(this);
     this.getChatId = this.getChatId.bind(this);
-    this.chatAll = this.chatAll.bind(this)
-    this.chatGet = this.chatGet.bind(this)
-    this.chatGetAll = this.chatGetAll.bind(this)
+    this.historyNew = this.historyNew.bind(this);
     this.listenUser = this.listenUser.bind(this)
-    this.setUser = this.setUser.bind(this)
     this.ref = this.ref.bind(this);
+    this.setUser = this.setUser.bind(this)
   }
 
   ref(): firebase.database.Reference {
@@ -163,6 +164,12 @@ export default class m {
   chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
     if (!this.user) return
     this.ref().child('chat').child(chat_id).child('conversation').child(key).once('value', s => callback(s.val()))
+  }
+
+
+  chatDelete(chat_id: string, key: string): void {
+    if (!this.user) return
+    this.ref().child('chat').child(chat_id).child('conversation').child(key).remove()
   }
 
   chatGetAll(chat_id: string, lastKey: string, callback: (allmsg: any) => void): void {
