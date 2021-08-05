@@ -19,6 +19,7 @@ export default class m {
     this.chatGetAll = this.chatGetAll.bind(this)
     this.chatListenAdd = this.chatListenAdd.bind(this);
     this.chatListenChange = this.chatListenChange.bind(this);
+    this.chatListenRemove = this.chatListenRemove.bind(this);
     this.chatSend = this.chatSend.bind(this);
     this.chatSendNew = this.chatSendNew.bind(this);
     this.chatUpdate = this.chatUpdate.bind(this);
@@ -184,6 +185,15 @@ export default class m {
         callback(snapshoot.val())
       })
     }
+  }
+
+  chatListenRemove(chat_id: string, callback: (removedChild: any) => void): () => void {
+    if (!this.user) return () => { }
+    const chatRemoved = this.ref().child('chat').child(chat_id).child('conversation')
+    chatRemoved.on('child_removed', (val) => {
+      callback(val.val())
+    })
+    return () => chatRemoved.off('child_removed')
   }
 
   chatListenAdd(chat_id: string, lastKey: string, callback: (message_item: any) => void): () => void {
