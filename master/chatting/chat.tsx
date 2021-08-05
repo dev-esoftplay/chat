@@ -1,7 +1,7 @@
 // useLibs
 
 import React, { useEffect, useMemo } from 'react';
-import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter, ChattingHistory, UserData, UserClass } from 'esoftplay';
+import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter, ChattingHistory, UserData, UserClass, LibWorkloop } from 'esoftplay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // @ts-ignore
 import moment from 'moment/min/moment-with-locales'
@@ -82,6 +82,7 @@ export interface ChatChatReturn {
 let dataChat: any = {}
 let chatAddListener: any = undefined
 let chatChangeListener: any = undefined
+let chatRemoveListener: any = undefined
 export default function m(props: ChattingChatProps): ChatChatReturn {
   const { update } = ChattingHistory()
   const user = UserClass.state().useSelector(s => s)
@@ -96,8 +97,10 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   const [isReady, setIsReady] = useSafeState(false)
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
-  UserData.register('chat_cache_' + chat_id)
-  ChattingOpen_setter(chat_id)
+  if (chat_id) {
+    UserData.register('chat_cache_' + chat_id)
+    ChattingOpen_setter(chat_id)
+  }
 
   useEffect(() => {
     let exec = setTimeout(async () => {
@@ -138,7 +141,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
           let keys = Object.keys(chats)
           const lastKey = chats[keys[keys.length - 1]].key
           dataChat = data || chats
-          if (chatAddListener == undefined && chatChangeListener == undefined) {
+          if (chatAddListener == undefined && chatChangeListener == undefined && chatRemoveListener == undefined) {
             chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
               if (!Object.keys(dataChat).includes(chat.key)) {
                 setRead(chat)
@@ -151,6 +154,10 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
               dataChat[chat.key] = chat
               setData({ ...dataChat })
             })
+            chatRemoveListener = chatLib.chatListenRemove(chat_id, (chat) => {
+              delete dataChat[chat.key]
+              setData({ ...dataChat })
+            })
           }
           setIsReady(true)
           setData(dataChat)
@@ -160,7 +167,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
               let keys = Object.keys(chats)
               const lastKey = chats[keys[keys.length - 1]].key || ''
               dataChat = data || chats
-              if (chatAddListener == undefined && chatChangeListener == undefined) {
+              if (chatAddListener == undefined && chatChangeListener == undefined && chatRemoveListener == undefined) {
                 chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
                   if (!Object.keys(dataChat).includes(chat.key)) {
                     setRead(chat)
@@ -171,6 +178,10 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
                 chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
                   setRead(chat)
                   dataChat[chat.key] = chat
+                  setData({ ...dataChat })
+                })
+                chatRemoveListener = chatLib.chatListenRemove(chat_id, (chat) => {
+                  delete dataChat[chat.key]
                   setData({ ...dataChat })
                 })
               }
@@ -190,13 +201,17 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         chatChangeListener()
         chatChangeListener = undefined
       }
+      if (chatRemoveListener) {
+        chatRemoveListener()
+        chatRemoveListener = undefined
+      }
     }
   }, [chat_id, loading])
 
 
   useEffect(() => {
     if (data) {
-      setCache(chat_id, data)
+      LibWorkloop.execNextTix(setCache, [chat_id, data])
       update()
     }
   }, [data])
