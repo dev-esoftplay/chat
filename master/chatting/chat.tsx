@@ -129,7 +129,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
 
   function setRead(chat: any) {
-    if (String(chat.user_id) != String(user?.id) && String(chat.read) == '0') {
+    if (String(chat.user_id) != String(user?.id)) {
       chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set('1')
     }
   }
