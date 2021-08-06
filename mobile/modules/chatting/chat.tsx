@@ -97,10 +97,8 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   const [isReady, setIsReady] = useSafeState(false)
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
-  if (chat_id) {
-    UserData.register('chat_cache_' + chat_id)
-    ChattingOpen_setter(chat_id)
-  }
+  UserData.register('chat_cache_' + chat_id)
+  ChattingOpen_setter(chat_id)
 
   useEffect(() => {
     let exec = setTimeout(async () => {
@@ -129,9 +127,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
 
   function setRead(chat: any) {
-    if (String(chat.user_id) != String(user?.id)) {
-      chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set('1')
-    }
+    chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set('1')
   }
 
   useEffect(() => {
@@ -144,13 +140,11 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
           if (chatAddListener == undefined && chatChangeListener == undefined && chatRemoveListener == undefined) {
             chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
               if (!Object.keys(dataChat).includes(chat.key)) {
-                setRead(chat)
                 dataChat = { ...dataChat, [chat.key]: chat }
                 setData(dataChat)
               }
             })
             chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-              setRead(chat)
               dataChat[chat.key] = chat
               setData({ ...dataChat })
             })
@@ -170,13 +164,11 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
               if (chatAddListener == undefined && chatChangeListener == undefined && chatRemoveListener == undefined) {
                 chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
                   if (!Object.keys(dataChat).includes(chat.key)) {
-                    setRead(chat)
                     dataChat = { ...dataChat, [chat.key]: chat }
                     setData(dataChat)
                   }
                 })
                 chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-                  setRead(chat)
                   dataChat[chat.key] = chat
                   setData({ ...dataChat })
                 })
@@ -211,8 +203,11 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   useEffect(() => {
     if (data) {
-      LibWorkloop.execNextTix(setCache, [chat_id, data])
       update()
+      LibWorkloop.execNextTix(setCache, [chat_id, data])
+      Object.values(data).filter((c: any) => c.read == '0' && c.user_id != user?.id).forEach((x) => {
+        setRead(x)
+      })
     }
   }, [data])
 
