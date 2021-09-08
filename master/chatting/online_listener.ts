@@ -3,8 +3,8 @@
 import React, { useEffect, useMemo } from 'react'
 import { useSafeState, ChattingLib, LibUtils, esp } from 'esoftplay'
 //@ts-ignore
-import moment from 'moment/min/moment-with-locales'
-moment.locale('id')
+import moment from 'esoftplay/moment'
+moment().locale('id')
 
 export default function m(chat_to: string): [string, any] {
   const main = useMemo(() => new ChattingLib().ref(), [])
@@ -15,7 +15,7 @@ export default function m(chat_to: string): [string, any] {
   function update(data: any) {
     const online = data.online
     const time = parseInt((new Date().getTime() / 1000).toFixed(0))
-    setStatus((time - parseInt(online) <= 6) ? 'Online' : moment.unix(parseInt(online)).fromNow())
+    setStatus((time - parseInt(online) <= 6) ? 'Online' : moment(online).fromNow())
     setOpposite(data)
   }
 
