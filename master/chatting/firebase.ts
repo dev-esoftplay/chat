@@ -1,3 +1,5 @@
+// noPage
+
 import firebase from 'firebase';
 import { esp } from 'esoftplay';
 

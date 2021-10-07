@@ -16,7 +16,7 @@
     "@types/lodash": "^4.14.157",
     "buffer": "^6.0.3",
     "dayjs": "^1.10.6",
-    "esoftplay": "^0.0.105-a",
+    "esoftplay": "^0.0.106-k",
     "expo": "^42.0.0",
     "expo-av": "~9.2.3",
     "expo-blur": "~9.0.3",

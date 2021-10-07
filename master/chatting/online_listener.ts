@@ -1,4 +1,5 @@
 // useLibs
+// noPage
 
 import React, { useEffect, useMemo } from 'react'
 import { useSafeState, ChattingLib, LibUtils, esp } from 'esoftplay'

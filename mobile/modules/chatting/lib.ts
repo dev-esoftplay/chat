@@ -1,3 +1,5 @@
+// noPage
+
 import React from 'react'
 import { LibUtils, esp, ChattingFirebase, UserClass } from 'esoftplay';
 import { Alert } from 'react-native';
