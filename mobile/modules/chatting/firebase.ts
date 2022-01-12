@@ -1,7 +1,7 @@
 // noPage
 
-import firebase from 'firebase';
 import { esp } from 'esoftplay';
+import firebase from 'firebase';
 
 export default class m {
 
@@ -10,7 +10,7 @@ export default class m {
     if (esp.config().hasOwnProperty('firebase')) {
     } else {
       throw "ERROR : firebase not found in config.json"
-    }    
+    }
     this.main = firebase.database().ref(ref)
     this.getMainRef = this.getMainRef.bind(this);
     this.signInAnonymously = this.signInAnonymously.bind(this);
@@ -19,10 +19,12 @@ export default class m {
 
   signInAnonymously(): void {
     if (esp.config().hasOwnProperty('firebase')) {
-      try {
-        firebase.initializeApp(esp.config('firebase'));
-        firebase.auth().signInAnonymously();
-      } catch (error) { }
+      if (!firebase.apps.length) {
+        try {
+          firebase.initializeApp(esp.config('firebase'));
+          firebase.auth().signInAnonymously();
+        } catch (error) { }
+      }
     }
   }
 
