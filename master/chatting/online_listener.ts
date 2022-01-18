@@ -5,10 +5,11 @@ import React, { useEffect, useMemo } from 'react'
 import { useSafeState, ChattingLib, LibUtils, esp } from 'esoftplay'
 //@ts-ignore
 import moment from 'esoftplay/moment'
+import { onValue } from 'firebase/database'
 moment().locale('id')
 
 export default function m(chat_to: string): [string, any] {
-  const main = useMemo(() => new ChattingLib().ref(), [])
+  const cl = useMemo(() => new ChattingLib(), [])
   const [status, setStatus] = useSafeState<string>("Loading...")
   const [opposite, setOpposite] = useSafeState<string>("Loading...")
   const [offlineMode, setOfflineMode] = useSafeState(false)
@@ -21,16 +22,16 @@ export default function m(chat_to: string): [string, any] {
   }
 
   useEffect(() => {
+    let listener
     if (chat_to)
-      main.child("users").child(chat_to).on('value',
-        snapshoot => {
-          if (snapshoot.val()) {
-            update(snapshoot.val())
-          }
-        })
+      listener = onValue(cl.ref("users", chat_to), (snapshoot) => {
+        if (snapshoot.exists()) {
+          update(snapshoot.val())
+        }
+      })
     return () => {
-      if (chat_to)
-        main.child("users").child(chat_to).off('value')
+      if (chat_to && listener)
+        listener()
     }
   }, [chat_to])
 

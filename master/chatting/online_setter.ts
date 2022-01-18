@@ -4,30 +4,32 @@
 import React, { useEffect, useMemo } from 'react'
 import { ChattingLib, UserClass } from 'esoftplay'
 import { AppState } from 'react-native'
+import { set } from 'firebase/database'
 
 export default function m(): void {
-  const main = useMemo(() => new ChattingLib().ref(), [])
+  const cl = useMemo(() => new ChattingLib(), [])
   const user = UserClass.state().useSelector(s => s)
   let time: any = undefined
 
-  function set() {
+  function _set() {
     if (user && user.hasOwnProperty("id")) {
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      main.child("users").child(user?.id).child("online").set(timestamp)
+      set(cl.ref("users", user.id, "online"), timestamp)
+      // main.child("users").child(user?.id).child("online").set(timestamp)
     }
   }
 
   function onAppStateChange(state: string) {
     if (state == "active") {
       if (time) clearInterval(time)
-      setInterval(set, 5000)
+      setInterval(_set, 5000)
     } else {
       if (time) clearInterval(time)
     }
   }
 
   useEffect(() => {
-    time = setInterval(set, 5000)
+    time = setInterval(_set, 5000)
     AppState.addEventListener("change", onAppStateChange)
     return () => {
       if (time) clearInterval(time)
