@@ -1,39 +1,43 @@
 // noPage
 
-import { esp } from 'esoftplay';
-import firebase from 'firebase';
+import { esp, _global } from 'esoftplay';
+import { initializeApp } from 'firebase/app';
+import { initializeAuth, signInAnonymously } from 'firebase/auth';
+import { Database, DatabaseReference, getDatabase, ref } from 'firebase/database'
+import { getReactNativePersistence } from 'firebase/auth/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default class m {
-
-  main: firebase.database.Reference
+  main: Database
+  mainRef: string;
   constructor(ref: string) {
     if (esp.config().hasOwnProperty('firebase')) {
     } else {
       throw "ERROR : firebase not found in config.json"
     }
-    this.main = firebase.database().ref(ref)
+    this.mainRef = ref;
     this.getMainRef = this.getMainRef.bind(this);
-    this.signInAnonymously = this.signInAnonymously.bind(this);
+    this.main = getDatabase(_global.firebaseapp)
     this.refTo = this.refTo.bind(this);
   }
 
-  signInAnonymously(): void {
+  static signInAnonymously(): void {
     if (esp.config().hasOwnProperty('firebase')) {
-      if (!firebase.apps.length) {
-        try {
-          firebase.initializeApp(esp.config('firebase'));
-          firebase.auth().signInAnonymously();
-        } catch (error) { }
+      if (esp.config('firebase').hasOwnProperty('apiKey')) {
+        if (!_global.firebaseapp) {
+          _global.firebaseapp = initializeApp(esp.config('firebase'));
+          const appAuth = initializeAuth(_global.firebaseapp, { persistence: getReactNativePersistence(AsyncStorage) })
+          signInAnonymously(appAuth);
+        }
       }
     }
   }
 
-  refTo(uriRef: (number | string)[]): firebase.database.Reference {
-    return this.main.child(uriRef.join("/"))
+  refTo(uriRef: (number | string)[]): DatabaseReference {
+    return ref(this.main, this.getMainRef() + uriRef.join('/'))
   }
 
-  getMainRef(): firebase.database.Reference {
-    return this.main
+  getMainRef(): string {
+    return (this.mainRef + '/')
   }
-
 }

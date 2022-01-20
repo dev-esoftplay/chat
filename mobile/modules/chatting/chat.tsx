@@ -1,11 +1,12 @@
+// @ts-ignore
 // useLibs
 // noPage
 
 import React, { useEffect, useMemo } from 'react';
 import { ChattingLib, useSafeState, ChattingOnline_listener, ChattingOpen_listener, LibCurl, esp, ChattingOpen_setter, ChattingHistory, UserData, UserClass, LibWorkloop } from 'esoftplay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// @ts-ignore
 import moment from 'esoftplay/moment'
+import { set } from 'firebase/database';
 moment().locale('id')
 
 export interface ChattingItem {
@@ -57,7 +58,7 @@ function getCache(chat_id: string, callback: (cache: any) => void) {
 }
 
 function setCache(chat_id: string, cache: any) {
-  AsyncStorage.setItem('chat_cache_' + chat_id, JSON.stringify(cache))
+  // AsyncStorage.setItem('chat_cache_' + chat_id, JSON.stringify(cache))
 }
 
 export interface ChatChatReturnUser {
@@ -128,61 +129,36 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
 
   function setRead(chat: any) {
-    chatLib.ref().child('chat').child(chat_id).child('conversation').child(chat.key).child('read').set('1')
+    set(chatLib.ref("chat", chat_id, "conversation", chat.key, "read"), "1")
   }
 
   useEffect(() => {
     if (chat_id && !loading) {
-      getCache(chat_id, (chats) => {
+      chatLib.chatGetAll(chat_id, '', (chats) => {
         if (chats) {
           let keys = Object.keys(chats)
-          const lastKey = chats[keys[keys.length - 1]].key
+          const lastKey = chats[keys[keys.length - 1]].key || ''
           dataChat = data || chats
-          if (chatAddListener == undefined && chatChangeListener == undefined && chatRemoveListener == undefined) {
+          if (chatAddListener == undefined)
             chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
               if (!Object.keys(dataChat).includes(chat.key)) {
-                dataChat = { ...dataChat, [chat.key]: chat }
+                dataChat = Object.assign(dataChat, { [chat.key]: chat })
                 setData(dataChat)
               }
             })
+          if (chatChangeListener == undefined)
             chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
               dataChat[chat.key] = chat
-              setData({ ...dataChat })
+              setData(dataChat)
             })
+          if (chatRemoveListener == undefined)
             chatRemoveListener = chatLib.chatListenRemove(chat_id, (chat) => {
               delete dataChat[chat.key]
-              setData({ ...dataChat })
+              setData(dataChat)
             })
-          }
-          setIsReady(true)
-          setData(dataChat)
-        } else {
-          chatLib.chatGetAll(chat_id, '', (chats) => {
-            if (chats) {
-              let keys = Object.keys(chats)
-              const lastKey = chats[keys[keys.length - 1]].key || ''
-              dataChat = data || chats
-              if (chatAddListener == undefined && chatChangeListener == undefined && chatRemoveListener == undefined) {
-                chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
-                  if (!Object.keys(dataChat).includes(chat.key)) {
-                    dataChat = { ...dataChat, [chat.key]: chat }
-                    setData(dataChat)
-                  }
-                })
-                chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-                  dataChat[chat.key] = chat
-                  setData({ ...dataChat })
-                })
-                chatRemoveListener = chatLib.chatListenRemove(chat_id, (chat) => {
-                  delete dataChat[chat.key]
-                  setData({ ...dataChat })
-                })
-              }
-            }
-            setData(dataChat)
-            setIsReady(true)
-          })
         }
+        setData(dataChat)
+        setIsReady(true)
       })
     }
     return () => {
@@ -206,17 +182,23 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (data) {
       update()
       LibWorkloop.execNextTix(setCache, [chat_id, data])
-      Object.values(data).filter((c: any) => c.read == '0' && c.user_id != user?.id).forEach((x) => {
-        setRead(x)
-      })
+      if (data)
+        Object.values(data).filter((c: any) => c.read == '0' && c.user_id != user?.id).forEach((x) => {
+          setRead(x)
+        })
     }
   }, [data])
 
   function loadPrevious(lastKey: string) {
     if (isReady && lastKey) {
-      chatLib.chatGetAll(chat_id, lastKey, (chats) => {
-        dataChat = { ...chats, ...dataChat }
-        setData(dataChat)
+      requestAnimationFrame(() => {
+        chatLib.chatGetAll(chat_id, lastKey, (chats) => {
+          if (chats) {
+            dataChat = Object.assign({}, chats, dataChat)
+            setData(dataChat)
+          } else {
+          }
+        })
       })
     } else {
       setHasNext(false)
@@ -253,7 +235,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   return {
     chat_id: chat_id,
     // @ts-ignore
-    conversation: (Object.values(data || {}) || []).reverse(),
+    conversation: (Object.values(data ? data : {}) || []).reverse(),
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,
