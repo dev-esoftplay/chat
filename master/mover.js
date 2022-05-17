@@ -41,7 +41,13 @@ if (fs.existsSync("./libs.json")) {
   // shell()
   // console.log("mohon tunggu ..")
   if (libs.length > 0) {
-    console.log("installing \n" + libs.join("\n"))
-    shell("cd ../../ && expo install " + libs.join(" && expo install "))
+    let newpackage = []
+    libs.forEach(lib => {
+      if (!fs.existsSync('../../node_modules/' + lib)) {
+        newpackage.push(lib)
+      }
+    })
+    console.log("installing \n" + newpackage.join("\n"))
+    shell("cd ../../ && expo install " + newpackage.join(" && expo install "))
   }
 }
