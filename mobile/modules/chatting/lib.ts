@@ -1,9 +1,8 @@
 // noPage
 
-import React from 'react'
-import { LibUtils, esp, ChattingFirebase, UserClass } from 'esoftplay';
+import { ChattingFirebase, esp, LibUtils, UserClass } from 'esoftplay';
+import { DatabaseReference, endAt, equalTo, get, limitToLast, onChildAdded, onChildChanged, onChildRemoved, onValue, orderByChild, orderByKey, push, query, remove, set, startAt } from 'firebase/database';
 import { Alert } from 'react-native';
-import { DatabaseReference, equalTo, remove, orderByChild, push, query, ref, get, set, orderByKey, endAt, limitToLast, onChildRemoved, off, onChildAdded, startAt, onChildChanged, onValue } from 'firebase/database';
 
 export default class m {
   user: any = undefined
@@ -214,7 +213,14 @@ export default class m {
     }
     get(_query).then((sn) => {
       if (sn.exists()) {
-        callback(sn.val());
+        const snapshoot = sn.val();
+        let a: any[] = []
+        Object.keys(snapshoot).map(key => {
+          let item = snapshoot[key];
+          item.key = key
+          a.push(item)
+        })
+        callback(a);
       } else {
         callback(null)
       }
