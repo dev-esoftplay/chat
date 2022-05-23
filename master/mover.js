@@ -1,13 +1,14 @@
 const fs = require('fs');
 const shell = require('child_process').execSync;
 const merge = require('lodash/merge')
-const moduleName = "chatting"
+const { moduleName } = require("./index")
+const assetsFonts = "assets/fonts"
 
 /* copy directory */
 if (fs.existsSync('../esoftplay/esp.ts')) {
-  if (fs.existsSync('../esoftplay/modules/chatting'))
-    shell('rm -r ../esoftplay/modules/chatting')
-  shell("cp -r ./chatting ../esoftplay/modules/")
+  if (fs.existsSync('../esoftplay/modules/' + moduleName))
+    shell('rm -r ../esoftplay/modules/' + moduleName)
+  shell("cp -r ./" + moduleName + " ../esoftplay/modules/")
 } else {
   throw "Mohon install esoftplay package terlebih dahulu"
 }
@@ -15,39 +16,65 @@ if (fs.existsSync('../esoftplay/esp.ts')) {
 function injectConfig(configPath) {
   if (fs.existsSync(configPath)) {
     const exsConf = require(configPath)
-    if (!exsConf.config.hasOwnProperty(moduleName)) {
-      const conf = require("./config.json")
-      fs.writeFileSync(configPath, JSON.stringify(merge(exsConf, { config: conf }), undefined, 2))
-    }
+    const conf = require("./config.json")
+    let _cf = merge({ config: conf }, exsConf)
+    fs.writeFileSync(configPath, JSON.stringify({ ..._cf }, undefined, 2))
   }
 }
-/*
-  untuk menambahkan default config["chatting"] pada main project otomatis saat install esoftplay-chatting
-*/
+
+/* injectConfig */
 injectConfig("../../config.json")
 injectConfig("../../config.live.json")
 injectConfig("../../config.debug.json")
 
 /* move assets */
-if (fs.existsSync("./assets/") && fs.existsSync("./assets/chatting")) {
-  if (!fs.existsSync("../../assets/chatting"))
-    shell("mkdir -p ../../assets/chatting")
-  shell("cp -r -n ./assets/* ../../assets/chatting/")
+if (fs.existsSync("./assets/")) {
+  if (!fs.existsSync("../../assets/" + moduleName))
+    shell("mkdir -p ../../assets/" + moduleName)
+  try {
+    shell("cp -r -n ./assets/* ../../assets/" + moduleName + "/")
+  } catch (error) { }
+}
+
+if (fs.existsSync("./fonts/")) {
+  if (!fs.existsSync("../../" + assetsFonts))
+    shell("mkdir -p ../../" + assetsFonts)
+  try {
+    shell("cp -r -n ./fonts/* ../../" + assetsFonts + "/")
+  } catch (error) { }
+}
+
+/* inject lang */
+if (fs.existsSync("./id.json")) {
+  let moduleLang = require("./id.json")
+  if (fs.existsSync("../../assets/locale/id.json")) {
+    let projectLang = require("../../assets/locale/id.json")
+    let _lg = merge(moduleLang, projectLang)
+    moduleLang = { ..._lg }
+  }
+  fs.writeFileSync("../../assets/locale/id.json", JSON.stringify(moduleLang, undefined, 2))
 }
 
 /* inject libs */
 if (fs.existsSync("./libs.json")) {
-  const libs = require("./libs.json")
-  // shell()
-  // console.log("mohon tunggu ..")
-  if (libs.length > 0) {
-    let newpackage = []
-    libs.forEach(lib => {
-      if (!fs.existsSync('../../node_modules/' + lib)) {
-        newpackage.push(lib)
-      }
+  let libs = require("./libs.json")
+  let libsToSkip = []
+  libs.forEach((element, index) => {
+    console.log(element.split("@")[0])
+    if (fs.existsSync("../../node_modules/" + element.split("@")[0])) {
+      libsToSkip.push(element)
+    }
+  })
+  if (libsToSkip.length > 0) {
+    libsToSkip.forEach((lib) => {
+      libs = libs.filter((x) => x != lib)
+      console.log(lib + " is exist, Skipped")
     })
-    console.log("installing \n" + newpackage.join("\n"))
-    shell("cd ../../ && expo install " + newpackage.join(" && expo install "))
   }
+  if (libs.length > 0) {
+    console.log("mohon tunggu ..")
+    console.log("installing \\n" + libs.join("\\n"))
+    shell("cd ../../ && expo install " + libs.join(" && expo install "))
+  }
+  console.log("Success..!")
 }

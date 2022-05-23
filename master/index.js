@@ -1,1 +1,4 @@
-export const moduleName = "chatting"
+const moduleName = "chatting"
+module.exports = {
+  moduleName,
+}
