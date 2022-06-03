@@ -7,6 +7,7 @@ import { ChattingHistory, ChattingLib, ChattingOnline_listener, ChattingOpen_lis
 import moment from 'esoftplay/moment';
 import { set } from 'firebase/database';
 import { useEffect, useMemo } from 'react';
+import { LibUtils } from '../..';
 moment().locale('id')
 
 export interface ChattingItem {
@@ -235,7 +236,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   return {
     chat_id: chat_id,
     // @ts-ignore
-    conversation: (Object.values(data ? data : {}) || []).reverse(),
+    conversation: LibUtils.uniqueArray((Object.values(data ? data : {}) || []).reverse()),
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,
