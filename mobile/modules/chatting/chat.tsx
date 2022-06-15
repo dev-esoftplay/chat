@@ -3,7 +3,7 @@
 // noPage
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ChattingHistory, ChattingLib, ChattingOnline_listener, ChattingOpen_listener, ChattingOpen_setter, createCache, esp, LibCurl, LibWorkloop, UserClass, UserData, useSafeState } from 'esoftplay';
+import { ChattingHistory, ChattingLib, ChattingOnline_listener, ChattingOpen_listener, ChattingOpen_setter, createCache, esp, LibCurl, LibUtils, LibWorkloop, UserClass, UserData, useSafeState } from 'esoftplay';
 import moment from 'esoftplay/moment';
 import { set } from 'firebase/database';
 import { useEffect, useMemo } from 'react';
@@ -196,7 +196,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   function loadPrevious(lastKey: string) {
     if (isReady && lastKey) {
-      requestAnimationFrame(() => {
+      LibUtils.debounce(() => {
         chatLib.chatGetAll(chat_id, lastKey, (chats) => {
           if (chats) {
             // console.log(chats, "loadPrevious", cacheChat.get())
@@ -205,7 +205,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
           } else {
           }
         })
-      })
+      }, 500)
     } else {
       setHasNext(false)
     }
