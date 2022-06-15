@@ -3,7 +3,7 @@
 // noPage
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ChattingHistory, ChattingLib, ChattingOnline_listener, ChattingOpen_listener, ChattingOpen_setter, esp, LibCurl, LibWorkloop, UserClass, UserData, useSafeState } from 'esoftplay';
+import { ChattingHistory, ChattingLib, ChattingOnline_listener, ChattingOpen_listener, ChattingOpen_setter, createCache, esp, LibCurl, LibWorkloop, UserClass, UserData, useSafeState } from 'esoftplay';
 import moment from 'esoftplay/moment';
 import { set } from 'firebase/database';
 import { useEffect, useMemo } from 'react';
@@ -81,11 +81,12 @@ export interface ChatChatReturn {
   loading: boolean
 }
 
-let dataChat: any = {}
 let chatAddListener: any = undefined
 let chatChangeListener: any = undefined
 let chatRemoveListener: any = undefined
+const cacheChat = createCache({})
 export default function m(props: ChattingChatProps): ChatChatReturn {
+
   const { update } = ChattingHistory()
   const user = UserClass.state().useSelector(s => s)
   const chatLib = useMemo(() => new ChattingLib(), [])
@@ -138,26 +139,30 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         if (chats) {
           let keys = Object.keys(chats)
           const lastKey = chats[keys[keys.length - 1]].key || ''
-          dataChat = data || chats
+          cacheChat.set(data || chats)
+          // console.log("chatGetAll", cacheChat.get())
           if (chatAddListener == undefined)
             chatAddListener = chatLib.chatListenAdd(chat_id, String(lastKey), (chat: any) => {
-              if (!Object.keys(dataChat).includes(chat.key)) {
-                dataChat = Object.assign(dataChat, { [chat.key]: chat })
+              if (!Object.keys(cacheChat.get()).includes(chat.key)) {
+                let dataChat = Object.assign(cacheChat.get(), { [chat.key]: chat })
+                cacheChat.set(dataChat)
                 setData(dataChat)
               }
             })
           if (chatChangeListener == undefined)
             chatChangeListener = chatLib.chatListenChange(chat_id, (chat) => {
-              dataChat[chat.key] = chat
-              setData(dataChat)
+              cacheChat.set((dataChat) => dataChat[chat.key] = chat)
+              setData(cacheChat.get())
             })
           if (chatRemoveListener == undefined)
             chatRemoveListener = chatLib.chatListenRemove(chat_id, (chat) => {
+              let dataChat = cacheChat.get()
               delete dataChat[chat.key]
+              cacheChat.set(dataChat)
               setData(dataChat)
             })
         }
-        setData(dataChat)
+        setData(cacheChat.get())
         setIsReady(true)
       })
     }
@@ -194,8 +199,9 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
       requestAnimationFrame(() => {
         chatLib.chatGetAll(chat_id, lastKey, (chats) => {
           if (chats) {
-            dataChat = Object.assign({}, chats, dataChat)
-            setData(dataChat)
+            // console.log(chats, "loadPrevious", cacheChat.get())
+            let _dataChat = Object.assign({}, chats, cacheChat.get())
+            setData(_dataChat)
           } else {
           }
         })

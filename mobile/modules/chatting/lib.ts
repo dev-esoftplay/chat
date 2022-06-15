@@ -188,7 +188,7 @@ export default class m {
     if (!this.user) return
     get(this.ref('chat', chat_id, 'conversation', key)).then((sn) => {
       if (sn.exists()) {
-        callback(sn.val())
+        callback({ ...sn.val(), key: sn.key });
       } else {
         callback(null)
       }
@@ -214,11 +214,11 @@ export default class m {
     get(_query).then((sn) => {
       if (sn.exists()) {
         const snapshoot = sn.val();
-        let a: any[] = []
+        let a: any = {}
         Object.keys(snapshoot).map(key => {
           let item = snapshoot[key];
           item.key = key
-          a.push(item)
+          a[key] = item
         })
         callback(a);
       } else {
@@ -231,7 +231,7 @@ export default class m {
     if (!this.user) return () => { }
     const onChildRemove = onChildRemoved(this.ref('chat', chat_id, 'conversation'), (sn) => {
       if (sn.exists()) {
-        callback(sn.val());
+        callback({ ...sn.val(), key: sn.key });
       }
     })
     return () => onChildRemove()
@@ -241,7 +241,7 @@ export default class m {
     if (!this.user) return () => { }
     const onChildAdd = onChildAdded(query(this.ref('chat', chat_id, 'conversation'), orderByKey(), startAt(lastKey)), (sn) => {
       if (sn.exists()) {
-        callback(sn.val());
+        callback({ ...sn.val(), key: sn.key });
       }
     })
     // const chatAddRef = this.ref().child('chat').child(chat_id).child('conversation')
@@ -255,7 +255,7 @@ export default class m {
     if (!this.user) return () => { }
     const onChildChange = onChildChanged(this.ref('chat', chat_id, 'conversation'), (sn) => {
       if (sn.exists()) {
-        callback(sn.val());
+        callback({ ...sn.val(), key: sn.key });
       }
     })
     // const chatAddRef = this.ref().child('chat').child(chat_id).child('conversation')
