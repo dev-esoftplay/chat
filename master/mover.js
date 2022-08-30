@@ -78,3 +78,25 @@ if (fs.existsSync("./libs.json")) {
   }
   console.log("Success..!")
 }
+
+
+
+/* inject user Index */
+const be = `//esoftplay-chatting`
+const toBe = `
+      if (esp.config('firebase').hasOwnProperty('apiKey')) {
+        try {
+          const ChattingFirebase = esp.mod('chatting/firebase')
+          if (ChattingFirebase)
+            ChattingFirebase?.signInAnonymously?.();
+        } catch (error) {
+
+        }
+      }
+`
+if (fs.existsSync('../esoftplay/modules/user/index.tsx')) {
+  let userIndexString = fs.readFileSync('../esoftplay/modules/user/index.tsx', { encoding: 'utf-8' })
+  userIndexString = userIndexString.replace(be, toBe)
+  fs.writeFileSync('../esoftplay/modules/user/index.tsx', userIndexString, { encoding: 'utf-8' })
+  console.log("chat inserted")
+}
