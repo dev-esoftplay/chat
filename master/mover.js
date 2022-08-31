@@ -13,10 +13,16 @@ if (fs.existsSync('../esoftplay/esp.ts')) {
   throw "Mohon install esoftplay package terlebih dahulu"
 }
 
+
+function readAsJson(path) {
+	return JSON.parse(fs.readFileSync(path, { encoding: 'utf8' }))
+}
+
+
 function injectConfig(configPath) {
   if (fs.existsSync(configPath)) {
-    const exsConf = require(configPath)
-    const conf = require("./config.json")
+    const exsConf = readAsJson(configPath)
+    const conf = readAsJson("./config.json")
     let _cf = merge({ config: conf }, exsConf)
     fs.writeFileSync(configPath, JSON.stringify({ ..._cf }, undefined, 2))
   }
@@ -46,9 +52,9 @@ if (fs.existsSync("./fonts/")) {
 
 /* inject lang */
 if (fs.existsSync("./id.json")) {
-  let moduleLang = require("./id.json")
+  let moduleLang = readAsJson("./id.json")
   if (fs.existsSync("../../assets/locale/id.json")) {
-    let projectLang = require("../../assets/locale/id.json")
+    let projectLang = readAsJson("../../assets/locale/id.json")
     let _lg = merge(moduleLang, projectLang)
     moduleLang = { ..._lg }
   }
@@ -57,7 +63,7 @@ if (fs.existsSync("./id.json")) {
 
 /* inject libs */
 if (fs.existsSync("./libs.json")) {
-  let libs = require("./libs.json")
+  let libs = readAsJson("./libs.json")
   let libsToSkip = []
   libs.forEach((element, index) => {
     console.log(element.split("@")[0])
@@ -79,8 +85,6 @@ if (fs.existsSync("./libs.json")) {
   console.log("Success..!")
 }
 
-
-
 /* inject user Index */
 const be = `//esoftplay-chatting`
 const toBe = `
@@ -98,5 +102,5 @@ if (fs.existsSync('../esoftplay/modules/user/index.tsx')) {
   let userIndexString = fs.readFileSync('../esoftplay/modules/user/index.tsx', { encoding: 'utf-8' })
   userIndexString = userIndexString.replace(be, toBe)
   fs.writeFileSync('../esoftplay/modules/user/index.tsx', userIndexString, { encoding: 'utf-8' })
-  console.log("chat inserted")
+  console.log("chat inserted !")
 }
