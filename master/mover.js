@@ -13,11 +13,15 @@ if (fs.existsSync('../esoftplay/esp.ts')) {
   throw "Mohon install esoftplay package terlebih dahulu"
 }
 
-
 function readAsJson(path) {
-	return JSON.parse(fs.readFileSync(path, { encoding: 'utf8' }))
-}
+  let out = ""
+  try {
+    out = JSON.parse(fs.readFileSync(path, { encoding: 'utf8' }))
+  } catch (e) {
 
+  }
+  return out;
+}
 
 function injectConfig(configPath) {
   if (fs.existsSync(configPath)) {
