@@ -1,10 +1,10 @@
 // useLibs
 // noPage
-
-import React, { useEffect, useMemo } from 'react'
-import { ChattingLib, UserClass } from 'esoftplay'
-import { AppState } from 'react-native'
-import { set } from 'firebase/database'
+import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
+import { UserClass } from 'esoftplay/cache/user/class.import';
+import { set } from 'firebase/database';
+import { useEffect, useMemo } from 'react';
+import { AppState } from 'react-native';
 
 export default function m(chat_id: string): void {
   const cl = useMemo(() => new ChattingLib(), [])

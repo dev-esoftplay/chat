@@ -1,8 +1,13 @@
 // withHooks
-
-import React, { useRef } from 'react';
+import { ChattingChat } from 'esoftplay/cache/chatting/chat.import';
+import { LibInput } from 'esoftplay/cache/lib/input.import';
+import { LibList } from 'esoftplay/cache/lib/list.import';
+import { LibLoading } from 'esoftplay/cache/lib/loading.import';
+import { LibTextstyle } from 'esoftplay/cache/lib/textstyle.import';
+import { LibUtils } from 'esoftplay/cache/lib/utils.import';
+import { useRef } from 'react';
 import { View } from 'react-native';
-import { LibInput, LibList, ChattingChat, LibUtils, LibTextstyle, ChattingItem, LibLoading, esp } from 'esoftplay';
+
 
 export interface ChattingChattingProps {
 
@@ -38,7 +43,7 @@ export default function m(props: ChattingChattingProps): any {
               style={{ transform: [{ scaleY: - 1 }] }}
               onEndReached={() => loadPrevious(firstKey)}
               onEndReachedThreshold={1}
-              renderItem={(item: ChattingItem) => (
+              renderItem={(item: any) => (
                 <View style={{ transform: [{ scaleY: - 1 }] }} >
                   <LibTextstyle text={item.msg} textStyle="body" style={{ padding: 17 }} />
                   <LibTextstyle text={item.key} textStyle="footnote" style={{ padding: 17 }} />

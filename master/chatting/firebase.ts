@@ -1,11 +1,10 @@
 // noPage
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { esp, _global } from 'esoftplay';
 import { initializeApp } from 'firebase/app';
 import { initializeAuth, signInAnonymously } from 'firebase/auth';
-import { Database, DatabaseReference, getDatabase, ref } from 'firebase/database'
 import { getReactNativePersistence } from 'firebase/auth/react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Database, DatabaseReference, getDatabase, ref } from 'firebase/database';
 
 export default class m {
   main: Database
