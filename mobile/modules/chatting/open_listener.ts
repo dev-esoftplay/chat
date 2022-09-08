@@ -1,17 +1,17 @@
 // useLibs
 // noPage
+import { useSafeState } from 'esoftplay';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
+import { useEffect, useMemo } from 'react';
 
-
-import React, { useEffect, useMemo } from 'react'
-import { useSafeState, ChattingLib } from 'esoftplay'
-import { onValue } from 'firebase/database'
+import { onValue } from 'firebase/database';
 
 export default function m(chat_id: string, chat_to: string): [number] {
   const cl = useMemo(() => new ChattingLib(), [])
   const [status, setStatus] = useSafeState(0)
 
   useEffect(() => {
-    let listener
+    let listener: any
     if (chat_id && chat_to)
       listener = onValue(cl.ref("chat", chat_id, "member", chat_to, "is_open"), (snapshoot) => {
         if (snapshoot.exists()) {

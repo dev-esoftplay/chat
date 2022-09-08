@@ -1,8 +1,13 @@
 // withHooks
+import { ChattingHistory } from 'esoftplay/cache/chatting/history.import';
+import { ChattingOnline_setter } from 'esoftplay/cache/chatting/online_setter.import';
+import { LibList } from 'esoftplay/cache/lib/list.import';
+import { LibNavigation } from 'esoftplay/cache/lib/navigation.import';
+import { LibStyle } from 'esoftplay/cache/lib/style.import';
+import { LibTextstyle } from 'esoftplay/cache/lib/textstyle.import';
+import { useEffect } from 'react';
+import { TouchableOpacity } from 'react-native';
 
-import React, { useEffect } from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import { ChattingHistory, LibList, LibTextstyle, ChattingOnline_setter, LibStyle, LibNavigation } from 'esoftplay';
 
 
 export interface ChatIndexProps {
