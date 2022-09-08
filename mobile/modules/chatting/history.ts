@@ -1,11 +1,12 @@
 // useLibs
 // noPage
-import { esp, useGlobalState, useGlobalReturn } from 'esoftplay';
+import { esp, useGlobalReturn } from 'esoftplay';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
 import { UserClass } from 'esoftplay/cache/user/class.import';
+import useGlobalState from 'esoftplay/global';
 
-import { get, limitToLast, off, onValue, query } from 'firebase/database'
-import { useEffect, useMemo } from 'react'
+import { get, limitToLast, off, onValue, query } from 'firebase/database';
+import { useEffect, useMemo } from 'react';
 
 export interface ChatHistoryReturn {
   data: any[],

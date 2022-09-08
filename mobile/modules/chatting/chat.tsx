@@ -1,7 +1,7 @@
 // @ts-ignore
 // useLibs
 // noPage
-import { createCache, esp, useSafeState } from 'esoftplay';
+import { esp, useSafeState } from 'esoftplay';
 import { ChattingHistory } from 'esoftplay/cache/chatting/history.import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener.import';
@@ -12,6 +12,8 @@ import { LibUtils } from 'esoftplay/cache/lib/utils.import';
 import { LibWorkloop } from 'esoftplay/cache/lib/workloop.import';
 import { UserClass } from 'esoftplay/cache/user/class.import';
 import { UserData } from 'esoftplay/cache/user/data.import';
+import useGlobalState from 'esoftplay/global';
+
 
 import moment from 'esoftplay/moment';
 import { set } from 'firebase/database';
@@ -93,7 +95,7 @@ export interface ChatChatReturn {
 let chatAddListener: any = undefined
 let chatChangeListener: any = undefined
 let chatRemoveListener: any = undefined
-const cacheChat = createCache({})
+const cacheChat = useGlobalState({})
 export default function m(props: ChattingChatProps): ChatChatReturn {
 
   const { update } = ChattingHistory()
