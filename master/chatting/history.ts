@@ -1,8 +1,8 @@
 // useLibs
 // noPage
 import { esp, useGlobalReturn } from 'esoftplay';
-import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
-import { UserClass } from 'esoftplay/cache/user/class.import';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
 
 import { get, limitToLast, off, onValue, query } from 'firebase/database';

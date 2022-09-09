@@ -1,10 +1,10 @@
 // withHooks
-import { ChattingChat } from 'esoftplay/cache/chatting/chat.import';
-import { LibInput } from 'esoftplay/cache/lib/input.import';
-import { LibList } from 'esoftplay/cache/lib/list.import';
-import { LibLoading } from 'esoftplay/cache/lib/loading.import';
-import { LibTextstyle } from 'esoftplay/cache/lib/textstyle.import';
-import { LibUtils } from 'esoftplay/cache/lib/utils.import';
+import { ChattingChat } from 'esoftplay/cache/chatting/chat/import';
+import { LibInput } from 'esoftplay/cache/lib/input/import';
+import { LibList } from 'esoftplay/cache/lib/list/import';
+import { LibLoading } from 'esoftplay/cache/lib/loading/import';
+import { LibTextstyle } from 'esoftplay/cache/lib/textstyle/import';
+import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import React, { useRef } from 'react';
 import { View } from 'react-native';
 

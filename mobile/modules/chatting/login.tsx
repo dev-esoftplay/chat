@@ -1,13 +1,13 @@
 // withHooks
 import { esp } from 'esoftplay';
-import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
-import { LibCrypt } from 'esoftplay/cache/lib/crypt.import';
-import { LibCurl } from 'esoftplay/cache/lib/curl.import';
-import { LibIcon } from 'esoftplay/cache/lib/icon.import';
-import { LibImage } from 'esoftplay/cache/lib/image.import';
-import { LibNavigation } from 'esoftplay/cache/lib/navigation.import';
-import { LibProgress } from 'esoftplay/cache/lib/progress.import';
-import { UserClass } from 'esoftplay/cache/user/class.import';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import { LibCrypt } from 'esoftplay/cache/lib/crypt/import';
+import { LibCurl } from 'esoftplay/cache/lib/curl/import';
+import { LibIcon } from 'esoftplay/cache/lib/icon/import';
+import { LibImage } from 'esoftplay/cache/lib/image/import';
+import { LibNavigation } from 'esoftplay/cache/lib/navigation/import';
+import { LibProgress } from 'esoftplay/cache/lib/progress/import';
+import { UserClass } from 'esoftplay/cache/user/class/import';
 import React, { useEffect } from 'react';
 import { Alert, TouchableOpacity, View } from 'react-native';
 

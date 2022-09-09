@@ -1,7 +1,7 @@
 // useLibs
 // noPage
-import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
-import { UserClass } from 'esoftplay/cache/user/class.import';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import { UserClass } from 'esoftplay/cache/user/class/import';
 import { set } from 'firebase/database';
 import { useEffect, useMemo } from 'react';
 import { AppState } from 'react-native';

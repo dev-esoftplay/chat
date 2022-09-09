@@ -1,8 +1,8 @@
 // useLibs
 // noPage
 import { useSafeState } from 'esoftplay';
-import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
-import { LibUtils } from 'esoftplay/cache/lib/utils.import';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { useEffect, useMemo } from 'react';
 
 //@ts-ignore

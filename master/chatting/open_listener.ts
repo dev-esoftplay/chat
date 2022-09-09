@@ -1,7 +1,7 @@
 // useLibs
 // noPage
 import { useSafeState } from 'esoftplay';
-import { ChattingLib } from 'esoftplay/cache/chatting/lib.import';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { useEffect, useMemo } from 'react';
 
 import { onValue } from 'firebase/database';

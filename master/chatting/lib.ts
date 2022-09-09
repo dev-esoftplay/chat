@@ -1,8 +1,8 @@
 // noPage
 import { esp } from 'esoftplay';
-import { ChattingFirebase } from 'esoftplay/cache/chatting/firebase.import';
-import { LibUtils } from 'esoftplay/cache/lib/utils.import';
-import { UserClass } from 'esoftplay/cache/user/class.import';
+import { ChattingFirebase } from 'esoftplay/cache/chatting/firebase/import';
+import { LibUtils } from 'esoftplay/cache/lib/utils/import';
+import { UserClass } from 'esoftplay/cache/user/class/import';
 import { DatabaseReference, endAt, equalTo, get, limitToLast, onChildAdded, onChildChanged, onChildRemoved, onValue, orderByChild, orderByKey, push, query, remove, set, startAt } from 'firebase/database';
 import { Alert } from 'react-native';
 
