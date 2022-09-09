@@ -8,9 +8,8 @@ import { LibImage } from 'esoftplay/cache/lib/image.import';
 import { LibNavigation } from 'esoftplay/cache/lib/navigation.import';
 import { LibProgress } from 'esoftplay/cache/lib/progress.import';
 import { UserClass } from 'esoftplay/cache/user/class.import';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Alert, TouchableOpacity, View } from 'react-native';
-
 
 export interface ChatLoginProps {
 

@@ -296,7 +296,7 @@ export default class m {
 
   getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
     if (!this.user) return
-    let chattochecks = [];
+    let chattochecks: string[] = [];
     const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
       chattochecks.push(id + '+' + opposite_id)
       get((this.ref('history', id, group_id || this.group_id))).then((sn) => {

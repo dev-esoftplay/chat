@@ -5,9 +5,8 @@ import { LibList } from 'esoftplay/cache/lib/list.import';
 import { LibNavigation } from 'esoftplay/cache/lib/navigation.import';
 import { LibStyle } from 'esoftplay/cache/lib/style.import';
 import { LibTextstyle } from 'esoftplay/cache/lib/textstyle.import';
-import { useEffect } from 'react';
-import { TouchableOpacity } from 'react-native';
-
+import React, { useEffect } from 'react';
+import { TouchableOpacity, View } from 'react-native';
 
 
 export interface ChatIndexProps {

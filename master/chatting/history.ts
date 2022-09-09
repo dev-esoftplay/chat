@@ -7,7 +7,6 @@ import useGlobalState from 'esoftplay/global';
 
 import { get, limitToLast, off, onValue, query } from 'firebase/database';
 import { useEffect, useMemo } from 'react';
-
 export interface ChatHistoryReturn {
   data: any[],
   update: () => void,
