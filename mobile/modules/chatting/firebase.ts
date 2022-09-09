@@ -5,7 +5,6 @@ import { initializeApp } from 'firebase/app';
 import { initializeAuth, signInAnonymously } from 'firebase/auth';
 import { getReactNativePersistence } from 'firebase/auth/react-native';
 import { Database, DatabaseReference, getDatabase, ref } from 'firebase/database';
-
 export default class m {
   main: Database
   mainRef: string;

@@ -5,9 +5,8 @@ import { LibList } from 'esoftplay/cache/lib/list.import';
 import { LibLoading } from 'esoftplay/cache/lib/loading.import';
 import { LibTextstyle } from 'esoftplay/cache/lib/textstyle.import';
 import { LibUtils } from 'esoftplay/cache/lib/utils.import';
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import { View } from 'react-native';
-
 
 export interface ChattingChattingProps {
 
