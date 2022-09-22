@@ -97,6 +97,10 @@ const toBe = `
           const ChattingFirebase = esp.mod('chatting/firebase')
           if (ChattingFirebase)
             ChattingFirebase?.signInAnonymously?.();
+          if (user){
+            const ChattingLib = esp.mod('chatting/lib')
+            new ChattingLib().setUser()
+          }
         } catch (error) {
 
         }
