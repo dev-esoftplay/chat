@@ -5,8 +5,8 @@ import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
 
-import { get, limitToLast, off, onValue, query } from 'firebase/database';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
+import Firestore from './firestore';
 export interface ChatHistoryReturn {
   data: any[],
   update: () => void,
@@ -14,14 +14,13 @@ export interface ChatHistoryReturn {
   unread: number
 }
 
-const cattingHistory = useGlobalState<any[]>([], { persistKey: 'chat_history' })
+const cattingHistory: any = useGlobalState<any[]>([], { persistKey: 'chat_history' })
 export function state(): useGlobalReturn<any[]> {
   return cattingHistory
 }
 export default function m(): ChatHistoryReturn {
-  const cl = useMemo(() => new ChattingLib(), [])
   const [data, setData, delData] = state().useState()
-  const user = UserClass.state().useSelector(s => s)
+  const user = UserClass.state().useSelector((s: any) => s)
   const group_id = esp.config("group_id")
 
   useEffect(() => {
@@ -43,7 +42,7 @@ export default function m(): ChatHistoryReturn {
 
     const setvalue = () => {
       count++
-      if (Object.keys(hist).length == count) {
+      if (hist.length == count) {
         function compare(a: any, b: any) {
           if (a.time < b.time) return 1
           if (a.time > b.time) return -1
@@ -53,21 +52,22 @@ export default function m(): ChatHistoryReturn {
       }
     }
 
-    if (hist)
-      Object.values(hist).forEach((item: any) => {
-        const opposite_id = item.user_id
-        get(query(cl.ref("chat", item.chat_id, "conversation"), limitToLast(1))).then((snapshoot) => {
-          if (snapshoot.exists() && snapshoot.val()) {
-            const _snapshoot: any = Object.values(snapshoot.val())?.[0]
+    if (hist.length > 0)
+      hist.forEach((item: any) => {
+        const opposite_id = item.data.user_id
+        const path = ChattingLib().pathChat
+        Firestore.get.collectionOrderBy([...path, item.data.chat_id, "conversation"], [["timestamp", 'desc']], (snapshoot) => {
+          if (snapshoot) {
+            const _snapshoot: any = snapshoot[0].data
             if (_snapshoot) {
               item['user_id'] = _snapshoot.user_id
               item['chat_to'] = opposite_id
               item['msg'] = _snapshoot.msg
               item['time'] = _snapshoot.time
               item['read'] = _snapshoot.user_id != opposite_id ? '1' : _snapshoot.read
-              get(cl.ref("users", opposite_id)).then((snapshoot) => {
-                if (snapshoot.exists()) {
-                  histories.push({ ...item, ...snapshoot.val() })
+              Firestore.get.doc(["bbo", "chat", "users", opposite_id], [], (snap) => {
+                if (snap) {
+                  histories.push({ ...item, ...item.data, ...snap.data, id: snap.id })
                   setvalue()
                 } else {
                   setvalue()
@@ -83,24 +83,18 @@ export default function m(): ChatHistoryReturn {
       })
   }
 
-  function _get(): () => void {
-    if (!user || !user.hasOwnProperty("id")) return () => { }
-    off(cl.ref("history", user.id, group_id))
-    const onValueChange = onValue(cl.ref("history", user.id, group_id), (snapshoot: any) => {
-      update(snapshoot.val())
+  function _get() {
+    if (!user || !user.hasOwnProperty("id")) return
+    const path = ChattingLib().pathHistory
+    Firestore.listen.collection([...path, user.id, group_id], [], [["time", "desc"]], (snapshoot) => {
+      update(snapshoot)
     })
-    // main.child("history").child(user?.id).child(group_id).off('value')
-    // main.child("history").child(user?.id).child(group_id).on('value', snapshoot => {
-    //   if (!snapshoot.val()) return
-    //   update(snapshoot.val())
-    // })
-    return () => onValueChange()
   }
 
   return {
     data: data,
     update: _get,
     deleteCache: delData,
-    unread: data?.filter?.((x => x.read == 0)).length
+    unread: data?.filter?.((x => x?.data?.read == 0)).length
   }
 }

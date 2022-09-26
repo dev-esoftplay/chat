@@ -1,17 +1,16 @@
 // useLibs
 // noPage
 import { useSafeState } from 'esoftplay';
-import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 //@ts-ignore
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import moment from 'esoftplay/moment';
-import { onValue } from 'firebase/database';
+import Firestore from './firestore';
 moment().locale('id')
 
 export default function m(chat_to: string): [string, any] {
-  const cl = useMemo(() => new ChattingLib(), [])
   const [status, setStatus] = useSafeState<string>("Loading...")
   const [opposite, setOpposite] = useSafeState<string>("Loading...")
   const [offlineMode, setOfflineMode] = useSafeState(false)
@@ -24,16 +23,11 @@ export default function m(chat_to: string): [string, any] {
   }
 
   useEffect(() => {
-    let listener: any
-    if (chat_to)
-      listener = onValue(cl.ref("users", chat_to), (snapshoot) => {
-        if (snapshoot.exists()) {
-          update(snapshoot.val())
-        }
+    if (chat_to) {
+      const path = ChattingLib().pathUsers
+      Firestore.listen.doc([...path, chat_to], (snapshoot) => {
+        update(snapshoot)
       })
-    return () => {
-      if (chat_to && listener)
-        listener()
     }
   }, [chat_to])
 

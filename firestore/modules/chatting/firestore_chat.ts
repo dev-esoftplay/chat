@@ -1,43 +1,22 @@
-// useLibs
 // noPage
 
 import { esp } from "esoftplay"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
-import { serverTimestamp } from "firebase/firestore"
 import { Alert } from "react-native"
-import Firestore, { DataId } from "../chatting/firestore"
+import Firestore, { DataId } from "./firestore"
 
+// const user = { id: '1', name: 'mukhlis', image: 'https://api.bbo.co.id/images/modules/user/avatar/1372010478.jpg' }
+// const group_id = "4"
+const user = UserClass?.state?.()?.get()
+const group_id = esp.config('group_id') || '4'
 
-export interface ChattingLibReturn {
-  chatSendNew: (chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void) => void,
-  chatSend: (chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void) => void,
-  chatAll: (chat_id: string, callback: (messages: any[]) => void, lastIndex?: string) => void,
-  chatGet: (chat_id: string, key: string, callback: (chat: any) => void) => void,
-  chatDelete: (chat_id: string, key: string) => void,
-  chatGetAll: (chat_id: string, callback: (allmsg: any, end?: boolean) => void, page?: number, limit?: number) => void,
-  chatListenChange: (chat_id: string, callback: (removedChild: any) => void) => void,
-  chatUpdate: (key: string, chat_id: string, value: any) => void,
-  listenUser: (user_id: string, callback: (user: any) => void) => void,
-  setUser: (username?: string, image?: string, deleted?: boolean) => void,
-  getChatId: (chat_to: string, group_id: string, callback: (chat_id: string) => void) => void,
-  pathChat: any,
-  pathHistory: any,
-  pathUsers: any,
-}
+const pathChat = ['bbo', 'chat', 'chat']
+const pathHistory = ['bbo', 'chat', 'history']
+const pathUsers = ['bbo', 'chat', 'users']
 
-export default function m(): ChattingLibReturn {
-  const group_id = esp.config('group_id') || '4'
-  const perPage = 50
-
-  const pathChat = ['bbo', 'chat', 'chat']
-  const pathHistory = ['bbo', 'chat', 'history']
-  const pathUsers = ['bbo', 'chat', 'users']
-
-
-  function chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
-    const user = UserClass?.state?.()?.get?.()
-
+const ChattingLib = {
+  chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
     if (!user) return
     if (user?.id == chat_to) {
       Alert.alert('Oops..!', 'Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri')
@@ -48,7 +27,6 @@ export default function m(): ChattingLibReturn {
       msg: message,
       read: '0',
       time: chat_id,
-      timestamp: serverTimestamp(),
       user_id: user?.id,
     }
     if (attach) {
@@ -67,11 +45,9 @@ export default function m(): ChattingLibReturn {
     Firestore.add.doc([...pathChat, chat_id, 'member', chat_to], member, () => { })
 
     if (callback) callback(msg, chat_id)
-    if (withHistory) historyNew(chat_id, chat_to)
-  }
-  function historyNew(chat_id: string, chat_to: string): void {
-    const user = UserClass?.state?.()?.get?.()
-
+    if (withHistory) ChattingLib.historyNew(chat_id, chat_to)
+  },
+  historyNew(chat_id: string, chat_to: string): void {
     if (!user) return
     const _time = (new Date().getTime() / 1000).toFixed(0)
     let me = {
@@ -86,17 +62,14 @@ export default function m(): ChattingLibReturn {
     }
     Firestore.add.collection([...pathHistory, user?.id, group_id], me, () => { })
     Firestore.add.collection([...pathHistory, chat_to, group_id], notMe, () => { })
-  }
-  function chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
-    const user = UserClass?.state?.()?.get?.()
-
+  },
+  chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
     if (!user) return
     const _time = (new Date().getTime() / 1000).toFixed(0)
     let msg: any = {
       msg: message,
       read: '0',
       time: _time,
-      timestamp: serverTimestamp(),
       user_id: user?.id,
     }
     if (attach) {
@@ -114,16 +87,15 @@ export default function m(): ChattingLibReturn {
     Firestore.add.doc([...pathChat, chat_id, 'member', user?.id], member, () => { })
     Firestore.add.doc([...pathChat, chat_id, 'member', chat_to], member, () => { })
 
-    Firestore.get.collectionWhere([...pathHistory, user?.id, group_id], [['chat_id', '==', chat_id]], (data) => {
-
-      const currentHistory = data[0]
-      const currentKeyHistory = currentHistory.id
+    Firestore.get.collectionWhere([...pathHistory, user.id, group_id], [['chat_id', '==', chat_id]], (data) => {
+      const currentHistory = data
+      const currentKeyHistory = currentHistory[0].id
       Firestore.update.doc([...pathHistory, user.id, group_id, currentKeyHistory], "time", _time, () => { })
       Firestore.get.collection([...pathHistory, chat_to, group_id], (dt) => {
         if (dt) {
           for (let key in dt) {
             if (dt[key].data.chat_id == chat_id) {
-              Firestore.update.doc([...pathHistory, chat_to, group_id, dt[key].id], "time", _time, () => { })
+              Firestore.update.doc([...pathHistory, chat_to, group_id, key], "time", _time, () => { })
               break;
             }
           }
@@ -134,10 +106,8 @@ export default function m(): ChattingLibReturn {
     if (callback) {
       callback(msg)
     }
-  }
-  function chatAll(chat_id: string, callback: (messages: any[]) => void, lastIndex?: string): void {
-    const user = UserClass?.state?.()?.get?.()
-
+  },
+  chatAll(chat_id: string, callback: (messages: any[]) => void, lastIndex?: string): void {
     if (!user) return
     Firestore.get.collectionWhereOrderBy([...pathChat, chat_id, 'conversation'], [], [], (arr) => {
       if (arr) {
@@ -154,10 +124,8 @@ export default function m(): ChattingLibReturn {
         callback(null)
       }
     })
-  }
-  function chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
-    const user = UserClass?.state?.()?.get?.()
-
+  },
+  chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
     if (user) return
     Firestore.get.doc([...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
       if (dt) {
@@ -166,41 +134,31 @@ export default function m(): ChattingLibReturn {
         callback(null)
       }
     })
-  }
-  function chatDelete(chat_id: string, key: string): void {
-    const user = UserClass?.state?.()?.get?.()
-
+  },
+  chatDelete(chat_id: string, key: string): void {
     if (!user) return
     Firestore.delete.doc([...pathChat, chat_id, 'conversation', key], () => { })
-  }
-  function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, page?: number, limit?: number): void {
-    const user = UserClass?.state?.()?.get?.()
+  },
+  chatGetAll(chat_id: string, lastKey: string, callback: (allmsg: any) => void): void {
+  },
+  chatListenRemove(chat_id: string, callback: (removedChild: any) => void) {
     if (!user) return
-    Firestore.paginate(page == 0 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["timestamp", "desc"]], limit || perPage, (dt, endR) => {
-      if (dt) {
-        callback(dt, endR);
-      } else {
-        callback(null)
-      }
+    Firestore.listen.collection([...pathChat, chat_id, 'conversation'], (dt) => {
+      callback({ ...dt, key: dt.id });
     })
-  }
-  function chatListenChange(chat_id: string, callback: (removedChild: any) => void) {
-    const user = UserClass?.state?.()?.get?.()
-
-    if (!user) return
-    Firestore.listen.collection([...pathChat, chat_id, 'conversation'], [], [["timestamp", "desc"]], (dt) => {
-      callback(dt);
-    })
-  }
-  function chatUpdate(key: string, chat_id: string, value: any): void {
-    const user = UserClass?.state?.()?.get?.()
+  },
+  chatListenAdd(chat_id: string, lastKey: string, callback: (message_item: any) => void) {
+    ChattingLib.chatListenRemove(chat_id, callback)
+  },
+  chatListenChange(chat_id: string, callback: (message_item: any) => void) {
+    ChattingLib.chatListenRemove(chat_id, callback)
+  },
+  chatUpdate(key: string, chat_id: string, value: any): void {
     if (!key) return
     if (!user) return
     Firestore.add.doc([...pathChat, chat_id, 'conversation', key], value, () => { })
-  }
-  function listenUser(user_id: string, callback: (user: any) => void) {
-    const user = UserClass?.state?.()?.get?.()
-
+  },
+  listenUser(user_id: string, callback: (user: any) => void) {
     if (!user) return
     Firestore.listen.doc([...pathUsers, user_id], (dt) => {
       if (dt) {
@@ -209,20 +167,16 @@ export default function m(): ChattingLibReturn {
         callback(null)
       }
     })
-  }
-  function setUser(username?: string, image?: string, deleted?: boolean): void {
-    const user = UserClass?.state?.()?.get?.()
-
+  },
+  setUser(username?: string, image?: string, deleted?: boolean): void {
     if (!user) return
-    Firestore.add.doc([...pathUsers, user.id], {
+    Firestore.add.collection([...pathUsers, user.id], {
       username: LibUtils.ucwords(username || user.name),
       image: image || user.image,
       deleted: deleted ? '1' : '0'
-    }, () => { })
-  }
-  function getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
-    const user = UserClass?.state?.()?.get?.()
-
+    }, (dt) => { })
+  },
+  getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
     if (!user) return
     let chattochecks: string[] = [];
     const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
@@ -252,23 +206,6 @@ export default function m(): ChattingLibReturn {
       }
     })
   }
-
-
-  return {
-    pathChat: pathChat,
-    pathUsers: pathUsers,
-    pathHistory: pathHistory,
-    chatSendNew: chatSendNew,
-    chatSend: chatSend,
-    chatAll: chatAll,
-    chatGet: chatGet,
-    chatDelete: chatDelete,
-    chatGetAll: chatGetAll,
-    chatListenChange: chatListenChange,
-    chatUpdate: chatUpdate,
-    listenUser: listenUser,
-    setUser: setUser,
-    getChatId: getChatId,
-  }
-
 }
+
+export default ChattingLib
