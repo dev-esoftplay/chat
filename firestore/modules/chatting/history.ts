@@ -14,7 +14,7 @@ export interface ChatHistoryReturn {
   unread: number
 }
 
-const cattingHistory: any = useGlobalState<any[]>([], { persistKey: 'chat_history' })
+const cattingHistory: any = useGlobalState<any[]>([], { persistKey: 'chat_history', isUserData: true });
 export function state(): useGlobalReturn<any[]> {
   return cattingHistory
 }
@@ -54,39 +54,31 @@ export default function m(): ChatHistoryReturn {
 
     if (hist.length > 0)
       hist.forEach((item: any) => {
-        const opposite_id = item.data.user_id
-        const path = ChattingLib().pathChat
-        Firestore.get.collectionOrderBy([...path, item.data.chat_id, "conversation"], [["timestamp", 'desc']], (snapshoot) => {
-          if (snapshoot) {
-            const _snapshoot: any = snapshoot[0].data
-            if (_snapshoot) {
-              item['user_id'] = _snapshoot.user_id
-              item['chat_to'] = opposite_id
-              item['msg'] = _snapshoot.msg
-              item['time'] = _snapshoot.time
-              item['read'] = _snapshoot.user_id != opposite_id ? '1' : _snapshoot.read
-              Firestore.get.doc(["bbo", "chat", "users", opposite_id], [], (snap) => {
-                if (snap) {
-                  histories.push({ ...item, ...item.data, ...snap.data, id: snap.id })
-                  setvalue()
-                } else {
-                  setvalue()
-                }
-              })
-            } else {
-              setvalue()
-            }
+        const path = ChattingLib().pathUsers
+        const _snapshoot = item.data
+        item['user_id'] = _snapshoot.sender_id
+        item['chat_to'] = _snapshoot.chat_to
+        item['msg'] = _snapshoot.last_message
+        item['time'] = _snapshoot.time
+        item['read'] = user.id == _snapshoot.sender_id ? 1 : _snapshoot.read
+
+        Firestore.get.doc([...path, _snapshoot.chat_to], [], (snap) => {
+          if (snap) {
+            histories.push({ ...item, ...item.data, ...snap.data, id: snap.id })
+            setvalue()
           } else {
             setvalue()
           }
         })
+
       })
   }
 
   function _get() {
     if (!user || !user.hasOwnProperty("id")) return
-    const path = ChattingLib().pathHistory
-    Firestore.listen.collection([...path, user.id, group_id], [], [["time", "desc"]], (snapshoot) => {
+    const pathHistory = ChattingLib().pathHistory
+
+    Firestore.listen.collection([...pathHistory, user.id, group_id], [], [["time", "desc"]], (snapshoot) => {
       update(snapshoot)
     })
   }

@@ -13,6 +13,11 @@ export interface DataId {
 export type id = string
 let lastVisible: any = null
 
+export interface updateValue {
+  key: string,
+  value: string
+}
+
 const Firestore = {
   init() {
     _global.firebaseApp = initializeApp({
@@ -195,15 +200,17 @@ const Firestore = {
     }
   },
   update: {
-    doc(path: string[], index: string, value: string, cb: () => void, err?: (error: any) => void) {
+    doc(path: string[], value: updateValue[], cb: () => void, err?: (error: any) => void) {
       if (path.length % 2 > 0) {
         console.warn("path untuk akses Doc data tidak boleh berhenti di Collection [Firestore.update.doc]")
         return
       }
+      const val = value.map((x) => {
+        return { [x.key]: x.value }
+      })
+      const objVal = Object.assign({}, ...val)
       const colRef = doc(Firestore.db(), ...path)
-      updateDoc(colRef, {
-        [`${index}`]: value
-      }).then((e) => {
+      updateDoc(colRef, objVal).then((e) => {
         cb()
       }).catch(err)
     }

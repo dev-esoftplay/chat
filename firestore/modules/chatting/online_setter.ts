@@ -14,7 +14,7 @@ export default function m(): void {
     if (user && user.hasOwnProperty("id")) {
       const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      Firestore.update.doc([...path, user.id], "online", timestamp, () => { })
+      Firestore.update.doc([...path, user.id], [{ key: "online", value: timestamp }], () => { })
     }
   }
 

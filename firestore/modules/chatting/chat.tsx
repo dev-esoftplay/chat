@@ -7,6 +7,7 @@ import { ChattingHistory } from 'esoftplay/cache/chatting/history/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
 import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import';
+import { LibCurl } from 'esoftplay/cache/lib/curl/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { LibWorkloop } from 'esoftplay/cache/lib/workloop/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
@@ -138,7 +139,21 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   function setRead(chat: any) {
     const path = ChattingLib().pathChat
-    Firestore.update.doc([...path, chat_id, 'conversation', chat.id], "read", "1", () => { })
+    const pathHistory = ChattingLib().pathHistory
+
+    Firestore.update.doc([...path, chat_id, 'conversation', chat.id], [{ key: "read", value: "1" }], () => { })
+    Firestore.get.collectionIds([...pathHistory, user.id, group_id], ["time", "==", chat?.data?.time], (snap) => {
+      const dt = snap?.[0]
+      if (dt) {
+        Firestore.update.doc([...pathHistory, user.id, group_id, dt], [{ key: "read", value: "1" }], () => { })
+      }
+    })
+    Firestore.get.collectionIds([...pathHistory, chat.data.user_id, group_id], ["time", "==", chat?.data?.time], (snap) => {
+      const dt = snap?.[0]
+      if (dt) {
+        Firestore.update.doc([...pathHistory, chat.data.user_id, group_id, dt], [{ key: "read", value: "1" }], () => { })
+      }
+    })
   }
 
   useEffect(() => {
@@ -147,7 +162,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         ChattingLib().chatGetAll(chat_id, (chats, endReach) => {
           setData(chats)
           setIsReady(true)
-        }, 0, 10)
+        }, 1, 20)
       })
     }
   }, [chat_id, loading])
@@ -173,7 +188,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
             setData([...data, ...chats])
           } else {
           }
-        }, 1, 10)
+        }, 0, 20)
       }, 500)
     } else {
       setHasNext(false)
@@ -182,13 +197,13 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   function setNotif(chat_id: string, message: string): void {
     if (!isOpenChat) {
-      // new LibCurl('user_notif_chat', {
-      //   chat_id: chat_id,
-      //   chat_from: user?.id,
-      //   chat_to: chat_to,
-      //   group_id: group_id,
-      //   message: message
-      // })
+      new LibCurl('user_notif_chat', {
+        chat_id: chat_id,
+        chat_from: user?.id,
+        chat_to: chat_to,
+        group_id: group_id,
+        message: message
+      })
     }
   }
 
@@ -209,7 +224,6 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   return {
     chat_id: chat_id,
-    // @ts-ignore
     conversation: data,
     chat_to_online: online,
     chat_to_user: opposite,

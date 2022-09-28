@@ -28,7 +28,7 @@ export default function m(props: ChattingMainProps): any {
   const group_id = "4"
 
   function page(page?: number) {
-    Firestore.paginate(["sample"], [], [["id"]], 3, (dt, end) => {
+    Firestore.paginate(true, ["sample"], [], [["id"]], 3, (dt, end) => {
       setShow(true)
       if (end) {
         setShow(false)
@@ -79,7 +79,7 @@ export default function m(props: ChattingMainProps): any {
 
         // })
 
-        // Firestore.update.doc(['chat', 'history', '1', '4', 'history', "BMGLm0790rXKeFomzB1S"], "time", _time, () => { })
+        Firestore.update.doc(['sample', 'CB7Xo1I8WeKN4grf74uy'], [{ key: "alamat", value: "dawe" }, { key: "name", value: "mukhlis" }], () => { })
 
         // Firestore.get.collectionWhere(['chat', 'history', user.id, group_id, "history"], [['chat_id', '==', "1663735484"]], (data) => {
         //   const currentHistory = data
@@ -90,7 +90,7 @@ export default function m(props: ChattingMainProps): any {
 
 
       }} style={{ marginBottom: 10, alignItems: 'center', padding: 10, backgroundColor: 'orange' }}>
-        <LibTextstyle text='chatSendNew' textStyle='headline' style={{ color: 'white' }} />
+        <LibTextstyle text='Update' textStyle='headline' style={{ color: 'white' }} />
       </Pressable>
       <Pressable onPress={() => {
         const chat_id = (new Date().getTime() / 1000).toFixed(0)
