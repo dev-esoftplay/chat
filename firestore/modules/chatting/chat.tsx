@@ -8,6 +8,7 @@ import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listene
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
 import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import';
 import { LibCurl } from 'esoftplay/cache/lib/curl/import';
+import { LibObject } from 'esoftplay/cache/lib/object/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { LibWorkloop } from 'esoftplay/cache/lib/workloop/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
@@ -208,6 +209,21 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   }
 
   function send(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void) {
+    const _time = (new Date().getTime() / 1000).toFixed(0)
+    let dummyMsg: any = {
+      "data": {
+        "msg": message,
+        "read": "2",
+        "time": _time,
+        "user_id": user.id,
+      },
+      "id": "Sending..",
+    }
+    if (attach) {
+      dummyMsg.data["attach"] = attach
+    }
+    setData(LibObject.unshift(data, dummyMsg)())
+
     if (chat_id) {
       ChattingLib().chatSend(chat_id, chat_to, message, attach, (msg: ChattingItem) => {
         callback && callback(chat_id, msg)
