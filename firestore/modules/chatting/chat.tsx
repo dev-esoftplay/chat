@@ -224,7 +224,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   return {
     chat_id: chat_id,
-    conversation: data,
+    conversation: data.map((item: any) => ({ ...item?.data, ...item, key: item?.id })),
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,
