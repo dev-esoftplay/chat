@@ -30,8 +30,7 @@ export default function m(): ChattingLibReturn {
   const group_id = esp.config('group_id') || '4'
   const perPage = 20
 
-  // const rootPath: string = esp?.appjson?.()?.expo?.name
-  const rootPath: string = "bbo"
+  const rootPath: string = esp?.appjson?.()?.expo?.name
   const pathChat = [rootPath, 'chat', 'chat']
   const pathHistory = [rootPath, 'chat', 'history']
   const pathUsers = [rootPath, 'chat', 'users']
@@ -198,7 +197,7 @@ export default function m(): ChattingLibReturn {
   function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, isStartPage?: number, limit?: number): void {
     const user = UserClass?.state?.()?.get?.()
     if (!user) return
-    Firestore.paginate(isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["timestamp", "desc"]], limit || perPage, (dt, endR) => {
+    Firestore.paginate(isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], limit || perPage, (dt, endR) => {
       if (dt) {
         callback(dt, endR);
       } else {
@@ -210,7 +209,7 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.listen.collection([...pathChat, chat_id, 'conversation'], [], [["timestamp", "desc"]], (dt) => {
+    Firestore.listen.collection([...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
       callback(dt);
     })
   }

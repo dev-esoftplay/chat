@@ -1,6 +1,7 @@
 // useLibs
 // noPage
 
+import { esp } from 'esoftplay';
 import _global from 'esoftplay/_global';
 import { initializeApp } from 'firebase/app';
 import { addDoc, collection, deleteDoc, doc, FieldPath, getDoc, getDocs, initializeFirestore, limit, onSnapshot, orderBy, OrderByDirection, query, setDoc, startAfter, updateDoc, where, WhereFilterOp } from 'firebase/firestore';
@@ -20,22 +21,17 @@ export interface updateValue {
 
 const Firestore = {
   init() {
-    _global.firebaseApp = initializeApp({
-      apiKey: "AIzaSyChqxbhmf7Qk_CagMc6v_bPeegXcLNkUqE",
-      authDomain: "esoftplay-log.firebaseapp.com",
-      databaseURL: "https://esoftplay-log-default-rtdb.firebaseio.com",
-      projectId: "esoftplay-log",
-      storageBucket: "esoftplay-log.appspot.com",
-      messagingSenderId: "844016531377",
-      appId: "1:844016531377:web:892688387299a7b0d3af90"
-    }, "firestore")
-    // _global.firebaseApp = initializeApp({
-    //   "apiKey": "AIzaSyB04JT4JJfFsArIccAjBEn1nwIlg8EVWx4",
-    //   "authDomain": "bigbang-online.firebaseapp.com",
-    //   "databaseURL": "https://bigbang-online.firebaseio.com/",
-    //   "storageBucket": "gs://bigbang-online.appspot.com/",
-    //   "projectId": "bigbang-online"
-    // })
+    if (esp.config().hasOwnProperty('firebase')) {
+      if (esp.config('firebase').hasOwnProperty('projectId')) {
+        if (!_global.firebaseapp) {
+          _global.firebaseApp = initializeApp(esp.config("firebase"), "firestore-init");
+        }
+      } else {
+        throw "ERROR : firebase projectId not found in config.json"
+      }
+    } else {
+      throw "ERROR : firebase not found in config.json"
+    }
   },
   db() {
     if (!_global.firebaseFirestore)
