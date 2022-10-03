@@ -1,0 +1,569 @@
+{
+  "1658997187": {
+    "conversation": {
+      "-NDCOi7JrZfKBS7LwS7W": {
+        "attach": {
+          "buttons": {
+            "1644": [
+              {
+                "enabled": true,
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1927"
+              }
+            ],
+            "29122": [
+              {
+                "enabled": true,
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1927"
+              }
+            ]
+          },
+          "data": {
+            "amount": 30000,
+            "booking_id": 1927,
+            "chat_id": "1658997187",
+            "chat_to": "1644",
+            "date": "30 Sep 2022 - 30 Sep 2022 (1 hari)",
+            "date_end": "2022-09-30",
+            "date_start": "2022-09-30",
+            "deleted": 0,
+            "description": "3.990.000",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "3990000",
+                "item_qty": 1,
+                "item_title": "Fix MD le minerale",
+                "item_total": 3990000
+              }
+            ],
+            "price_total": 3990000,
+            "quotation_code": "QC/2022/09/30/2094",
+            "quotation_id": 2094,
+            "request_code": "BC/2022/09/30/2204",
+            "request_id": 2204,
+            "request_title": "Gaji MD fix LM area Jakarta 24agt-23sep",
+            "services": "SPG / SPB",
+            "status": 0,
+            "status_payment": "6",
+            "status_quotation": 1,
+            "talent_id": 3628,
+            "type": 1
+          },
+          "description": "3.990.000",
+          "title": "Permintaan Jasa Talent"
+        },
+        "key": "-NDCOi7JrZfKBS7LwS7W",
+        "msg": "Quotation telah diterima",
+        "read": "1",
+        "time": "1664524673",
+        "user_id": "1644"
+      }
+    }
+  },
+  "1658997370": {
+    "conversation": {
+      "-NDCQkp1CLcVwDmrrMQK": {
+        "attach": {
+          "buttons": {
+            "1644": [
+              {
+                "enabled": true,
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1929"
+              }
+            ],
+            "30995": [
+              {
+                "enabled": true,
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1929"
+              }
+            ]
+          },
+          "data": {
+            "amount": 30000,
+            "booking_id": 1929,
+            "chat_id": "1658997370",
+            "chat_to": "1644",
+            "date": "30 Sep 2022 - 30 Sep 2022 (1 hari)",
+            "date_end": "2022-09-30",
+            "date_start": "2022-09-30",
+            "deleted": 0,
+            "description": "4.370.000",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "4370000",
+                "item_qty": 1,
+                "item_title": "Fee MD area surabaya bln september 2022",
+                "item_total": 4370000
+              }
+            ],
+            "price_total": 4370000,
+            "quotation_code": "QC/2022/09/30/2097",
+            "quotation_id": 2097,
+            "request_code": "BC/2022/09/30/2207",
+            "request_id": 2207,
+            "request_title": "Gaji MD fix LM area Surabaya 24agt-23sep",
+            "services": "SPG / SPB",
+            "status": 0,
+            "status_payment": "6",
+            "status_quotation": 1,
+            "talent_id": 1911,
+            "type": 1
+          },
+          "description": "4.370.000",
+          "title": "Permintaan Jasa Talent"
+        },
+        "key": "-NDCQkp1CLcVwDmrrMQK",
+        "msg": "Quotation telah diterima",
+        "read": "1",
+        "time": "1664525209",
+        "user_id": "1644"
+      }
+    }
+  },
+  "1661242784": {
+    "conversation": {
+      "-NDDG-eanLPMWsEHS1Jf": {
+        "key": "-NDDG-eanLPMWsEHS1Jf",
+        "msg": "Knapa paak",
+        "read": "0",
+        "time": "1664539166",
+        "user_id": "160601"
+      },
+      "-NDDG1iYBZkd-F9q8A-3": {
+        "key": "-NDDG1iYBZkd-F9q8A-3",
+        "msg": "Maap ni pak baru buka, sempet saya apus",
+        "read": "0",
+        "time": "1664539174",
+        "user_id": "160601"
+      },
+      "-NDDG2u__A9stla6MFAq": {
+        "key": "-NDDG2u__A9stla6MFAq",
+        "msg": "Apa kabar pak",
+        "read": "0",
+        "time": "1664539179",
+        "user_id": "160601"
+      }
+    },
+    "member": {
+      "160601": {
+        "is_open": "1664539196"
+      }
+    }
+  },
+  "1664421430": {
+    "conversation": {
+      "-ND6g7wkLqHm0QLZAj8g": {
+        "attach": {
+          "buttons": {
+            "56360": [
+              {
+                "enabled": true,
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1926"
+              }
+            ],
+            "184378": [
+              {
+                "enabled": true,
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1926"
+              }
+            ]
+          },
+          "data": {
+            "amount": 30000,
+            "booking_id": 1926,
+            "chat_id": "1664421430",
+            "chat_to": "56360",
+            "date": "29 Sep 2022 - 29 Sep 2022 (1 hari)",
+            "date_end": "2022-09-29",
+            "date_start": "2022-09-29",
+            "deleted": 0,
+            "description": "300.000",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "300000",
+                "item_qty": 1,
+                "item_title": "fee indo open 2022",
+                "item_total": 300000
+              }
+            ],
+            "price_total": 300000,
+            "quotation_code": "QC/2022/09/29/2092",
+            "quotation_id": 2092,
+            "request_code": "BC/2022/09/29/2202",
+            "request_id": 2202,
+            "request_title": "Gaji Ducati Ancol",
+            "services": "SPG / SPB",
+            "status": 0,
+            "status_payment": "9",
+            "status_quotation": 1,
+            "talent_id": 4568,
+            "type": 1
+          },
+          "description": "300.000",
+          "title": "Permintaan Jasa Talent"
+        },
+        "key": "-ND6g7wkLqHm0QLZAj8g",
+        "msg": "Quotation telah diterima",
+        "read": "0",
+        "time": "1664428837",
+        "user_id": "56360"
+      }
+    },
+    "member": {
+      "184378": {
+        "is_open": "1664429078"
+      }
+    }
+  },
+  "1664436411": {
+    "conversation": {
+      "-ND7JgIiUsyrRcqwQdsU": {
+        "attach": {
+          "buttons": {
+            "1644": [
+              {
+                "enabled": true,
+                "module": "bigbang/payment",
+                "text": "Setuju & Bayar",
+                "type": "success"
+              },
+              {
+                "enabled": true,
+                "text": "Tolak",
+                "type": "failed",
+                "url": "community_quotation_cancel/2093"
+              }
+            ],
+            "189705": [
+              {
+                "enabled": true,
+                "module": "quotation/detail",
+                "text": "Revisi",
+                "type": "success",
+                "url": "community_quotation_list_detail/2093"
+              },
+              {
+                "enabled": true,
+                "text": "Batal",
+                "type": "failed",
+                "url": "community_quotation_cancel/2093"
+              }
+            ]
+          },
+          "data": {
+            "chat_id": "1664436411",
+            "chat_to": "1644",
+            "date": "29 Sep 2022 - 29 Sep 2022 (1 hari)",
+            "date_end": "2022-09-29",
+            "date_start": "2022-09-29",
+            "deleted": 0,
+            "description": "1.868.386",
+            "is_cancel": 1,
+            "items": [
+              {
+                "item_price": "1868386",
+                "item_qty": 1,
+                "item_title": "Fee spg area Tangerang ",
+                "item_total": 1868386
+              }
+            ],
+            "price_total": 1868386,
+            "quotation_code": "QC/2022/09/29/2093",
+            "quotation_id": 2093,
+            "request_code": "BC/2022/09/29/2203",
+            "request_id": 2203,
+            "request_title": "Fee SPG Renceng GG jabodetabek 20agt-19sep",
+            "services": "SPG / SPB",
+            "status": 2,
+            "status_quotation": 0,
+            "talent_id": 4601,
+            "type": 1
+          },
+          "description": "1.868.386",
+          "module": "quotation/detail",
+          "title": "Permintaan Jasa Talent",
+          "url": "community_quotation_list_detail/2093"
+        },
+        "key": "-ND7JgIiUsyrRcqwQdsU",
+        "msg": "Quotation telah dibuat",
+        "read": "1",
+        "time": "1664439470",
+        "user_id": "189705"
+      },
+      "-NDCPOn7QJlvXmxzElqL": {
+        "key": "-NDCPOn7QJlvXmxzElqL",
+        "msg": "Km tlg ACC lg quo nya yaa",
+        "read": "1",
+        "time": "1664524852",
+        "user_id": "1644"
+      },
+      "-NDCPP_viHGR2MwdmzMY": {
+        "key": "-NDCPP_viHGR2MwdmzMY",
+        "msg": "Yg kemarin gagal",
+        "read": "1",
+        "time": "1664524855",
+        "user_id": "1644"
+      },
+      "-NDDBn-WoQV2gb75atHP": {
+        "key": "-NDDBn-WoQV2gb75atHP",
+        "msg": "Sudah bu",
+        "read": "1",
+        "time": "1664538064",
+        "user_id": "189705"
+      },
+      "-NDDWKmoBeDDXV8liMlH": {
+        "attach": {
+          "buttons": {
+            "1644": [
+              {
+                "enabled": true,
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1931"
+              }
+            ],
+            "189705": [
+              {
+                "enabled": true,
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1931"
+              }
+            ]
+          },
+          "data": {
+            "amount": 30000,
+            "booking_id": 1931,
+            "chat_id": "1664436411",
+            "chat_to": "1644",
+            "date": "30 Sep 2022 - 30 Sep 2022 (1 hari)",
+            "date_end": "2022-09-30",
+            "date_start": "2022-09-30",
+            "deleted": 0,
+            "description": "1.868.386",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "1868386",
+                "item_qty": 1,
+                "item_title": "Fee spg grosir area Tangerang ",
+                "item_total": 1868386
+              }
+            ],
+            "price_total": 1868386,
+            "quotation_code": "QC/2022/09/30/2098",
+            "quotation_id": 2098,
+            "request_code": "BC/2022/09/30/2208",
+            "request_id": 2208,
+            "request_title": "Fee SPG GG renceng GG area jabodetabek",
+            "services": "SPG / SPB",
+            "status": 0,
+            "status_payment": "6",
+            "status_quotation": 1,
+            "talent_id": 4601,
+            "type": 1
+          },
+          "description": "1.868.386",
+          "title": "Permintaan Jasa Talent"
+        },
+        "key": "-NDDWKmoBeDDXV8liMlH",
+        "msg": "Quotation telah diterima",
+        "read": "1",
+        "time": "1664543448",
+        "user_id": "1644"
+      }
+    },
+    "member": {
+      "1644": {
+        "is_open": "1664593679",
+        "is_typing": false
+      },
+      "189705": {
+        "is_open": "1664600873",
+        "is_typing": false
+      }
+    }
+  },
+  "1664524214": {
+    "conversation": {
+      "-NDCPvDK33-4c182feBe": {
+        "attach": {
+          "buttons": {
+            "1644": [
+              {
+                "enabled": true,
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1928"
+              }
+            ],
+            "29078": [
+              {
+                "enabled": true,
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1928"
+              }
+            ]
+          },
+          "data": {
+            "amount": 30000,
+            "booking_id": 1928,
+            "chat_id": "1664524214",
+            "chat_to": "1644",
+            "date": "30 Sep 2022 - 30 Sep 2022 (1 hari)",
+            "date_end": "2022-09-30",
+            "date_start": "2022-09-30",
+            "deleted": 0,
+            "description": "4.180.000",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "190000",
+                "item_qty": 22,
+                "item_title": "Fee md area Bandung bulan september 2022",
+                "item_total": 4180000
+              }
+            ],
+            "price_total": 4180000,
+            "quotation_code": "QC/2022/09/30/2096",
+            "quotation_id": 2096,
+            "request_code": "BC/2022/09/30/2205",
+            "request_id": 2205,
+            "request_title": "Gaji MD fix LM area bandung 24agt-23sep",
+            "services": "SPG / SPB",
+            "status": 0,
+            "status_payment": "6",
+            "status_quotation": 1,
+            "talent_id": 4574,
+            "type": 1
+          },
+          "description": "4.180.000",
+          "title": "Permintaan Jasa Talent"
+        },
+        "key": "-NDCPvDK33-4c182feBe",
+        "msg": "Quotation telah diterima",
+        "read": "1",
+        "time": "1664524989",
+        "user_id": "1644"
+      }
+    },
+    "member": {
+      "1644": {
+        "is_open": "1664525691",
+        "is_typing": false
+      },
+      "29078": {
+        "is_open": "1664676351",
+        "is_typing": false
+      }
+    }
+  },
+  "1664524339": {
+    "conversation": {
+      "-NDCRRBt2kKHSKMODUE7": {
+        "attach": {
+          "buttons": {
+            "1644": [
+              {
+                "enabled": true,
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1930"
+              }
+            ],
+            "187493": [
+              {
+                "enabled": true,
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1930"
+              }
+            ]
+          },
+          "data": {
+            "amount": 30000,
+            "booking_id": 1930,
+            "chat_id": "1664524339",
+            "chat_to": "1644",
+            "date": "30 Sep 2022 - 30 Sep 2022 (1 hari)",
+            "date_end": "2022-09-30",
+            "date_start": "2022-09-30",
+            "deleted": 0,
+            "description": "3.230.000",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "190000",
+                "item_qty": 17,
+                "item_title": "Fee md area semarang bulan sept 2022",
+                "item_total": 3230000
+              }
+            ],
+            "price_total": 3230000,
+            "quotation_code": "QC/2022/09/30/2095",
+            "quotation_id": 2095,
+            "request_code": "BC/2022/09/30/2206",
+            "request_id": 2206,
+            "request_title": "Gaji MD fix LM area Semarang 24agt-23sep",
+            "services": "SPG / SPB",
+            "status": 0,
+            "status_payment": "6",
+            "status_quotation": 1,
+            "talent_id": 4575,
+            "type": 1
+          },
+          "description": "3.230.000",
+          "title": "Permintaan Jasa Talent"
+        },
+        "key": "-NDCRRBt2kKHSKMODUE7",
+        "msg": "Quotation telah diterima",
+        "read": "0",
+        "time": "1664525386",
+        "user_id": "1644"
+      }
+    },
+    "member": {
+      "1644": {
+        "is_open": "1664525691",
+        "is_typing": false
+      },
+      "187493": {
+        "is_open": "1664525678",
+        "is_typing": false
+      }
+    }
+  }
+}
