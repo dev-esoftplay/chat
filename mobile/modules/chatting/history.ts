@@ -6,13 +6,14 @@ import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
 
 import { useEffect } from 'react';
-import Firestore from './firestore';
 export interface ChatHistoryReturn {
   data: any[],
   update: () => void,
   deleteCache: () => void,
   unread: number
 }
+
+const Firestore = esp.mod('chatting/firestore')
 
 const cattingHistory: any = useGlobalState<any[]>([], { persistKey: 'chat_history', isUserData: true });
 export function state(): useGlobalReturn<any[]> {

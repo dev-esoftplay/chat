@@ -1,10 +1,11 @@
 // useLibs
 // noPage
+import { esp } from 'esoftplay';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
-import Firestore from './firestore';
+const Firestore = esp.mod('chatting/firestore')
 
 export default function m(): void {
   const user = UserClass?.state?.()?.useSelector?.((s: any) => s)

@@ -4,6 +4,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { esp, useSafeState } from 'esoftplay';
 import { ChattingHistory } from 'esoftplay/cache/chatting/history/import';
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
 import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import';
@@ -16,9 +17,9 @@ import { UserData } from 'esoftplay/cache/user/data/import';
 
 import moment from 'esoftplay/moment';
 import { useEffect } from 'react';
-import Firestore from './firestore';
-import ChattingLib from './lib';
 moment().locale('id')
+
+const Firestore = esp.mod('chatting/firestore');
 
 export interface ChattingItem {
   key: string,
@@ -217,7 +218,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         "time": _time,
         "user_id": user.id,
       },
-      "id": "Sending..",
+      "id": _time,
     }
     if (attach) {
       dummyMsg.data["attach"] = attach

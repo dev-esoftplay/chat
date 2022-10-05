@@ -1,14 +1,14 @@
 // useLibs
 // noPage
-import { useSafeState } from 'esoftplay';
+import { esp, useSafeState } from 'esoftplay';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { useEffect } from 'react';
 
 //@ts-ignore
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import moment from 'esoftplay/moment';
-import Firestore from './firestore';
 moment().locale('id')
+const Firestore = esp.mod('chatting/firestore')
 
 export default function m(chat_to: string): [string, any] {
   const [status, setStatus] = useSafeState<string>("Loading...")

@@ -2,9 +2,10 @@
 // noPage
 import { useSafeState } from 'esoftplay';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import esp from 'esoftplay/esp';
 import { useEffect } from 'react';
 
-import Firestore from './firestore';
+const Firestore = esp.mod('chatting/firestore')
 
 export default function m(chat_id: string, chat_to: string): [number] {
   const [status, setStatus] = useSafeState(0)
