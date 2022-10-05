@@ -21,6 +21,7 @@ export interface ChattingLibReturn {
   listenUser: (user_id: string, callback: (user: any) => void) => void,
   setUser: (username?: string, image?: string, deleted?: boolean) => void,
   getChatId: (chat_to: string, group_id: string, callback: (chat_id: string) => void) => void,
+  makeId: (length: number) => void,
   pathChat: any,
   pathHistory: any,
   pathUsers: any,
@@ -35,6 +36,16 @@ export default function m(): ChattingLibReturn {
   const pathHistory = [rootPath, 'chat', 'history']
   const pathUsers = [rootPath, 'chat', 'users']
 
+  function makeid(length: number) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() *
+        charactersLength));
+    }
+    return result;
+  }
 
   function chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
     const user = UserClass?.state?.()?.get?.()
@@ -44,11 +55,12 @@ export default function m(): ChattingLibReturn {
       Alert.alert('Oops..!', 'Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri')
       return
     }
-    const chat_id = (new Date().getTime() / 1000).toFixed(0)
+    const chat_id = (new Date().getTime() / 1000).toFixed(0) + "-" + makeid(4)
+    const time = (new Date().getTime() / 1000).toFixed(0)
     let msg: any = {
       msg: message,
       read: '0',
-      time: chat_id,
+      time: time,
       timestamp: serverTimestamp(),
       user_id: user?.id,
     }
@@ -56,16 +68,22 @@ export default function m(): ChattingLibReturn {
       msg['attach'] = attach
     }
     /* buat chat member default */
-    let member = {
+    let memberMe = {
+      user_id: user?.id,
+      is_typing: false,
+      draf: ''
+    }
+    let memberNotMe = {
+      user_id: chat_to,
       is_typing: false,
       draf: ''
     }
 
     Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, () => { })
     /* me */
-    Firestore.add.doc([...pathChat, chat_id, 'member', user?.id], member, () => { })
+    Firestore.add.collection([...pathChat, chat_id, 'member'], memberMe, () => { })
     /* notMe */
-    Firestore.add.doc([...pathChat, chat_id, 'member', chat_to], member, () => { })
+    Firestore.add.collection([...pathChat, chat_id, 'member'], memberNotMe, () => { })
 
     if (callback) callback(msg, chat_id)
     if (withHistory) historyNew(chat_id, chat_to, message)
@@ -81,7 +99,9 @@ export default function m(): ChattingLibReturn {
       chat_to: chat_to,
       last_message,
       read: "0",
-      sender_id: user.id
+      sender_id: user?.id,
+      group_id,
+      user_id: user?.id
     }
     let notMe = {
       chat_id: chat_id,
@@ -89,10 +109,12 @@ export default function m(): ChattingLibReturn {
       chat_to: user?.id,
       last_message,
       read: "0",
-      sender_id: user.id
+      sender_id: user?.id,
+      group_id,
+      user_id: chat_to
     }
-    Firestore.add.collection([...pathHistory, user?.id, group_id], me, () => { })
-    Firestore.add.collection([...pathHistory, chat_to, group_id], notMe, () => { })
+    Firestore.add.collection([...pathHistory], me, () => { })
+    Firestore.add.collection([...pathHistory], notMe, () => { })
   }
   function chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
 
@@ -113,7 +135,13 @@ export default function m(): ChattingLibReturn {
     /* buat chat member default */
     let member = {
       is_typing: false,
-      draf: ''
+      draf: '',
+      user_id: user?.id
+    }
+    let notMe = {
+      is_typing: false,
+      draf: '',
+      user_id: chat_to
     }
     /* simpan pesan */
     Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
@@ -124,35 +152,20 @@ export default function m(): ChattingLibReturn {
     })
 
     /* set members */
-    Firestore.add.doc([...pathChat, chat_id, 'member', user?.id], member, () => { })
-    Firestore.add.doc([...pathChat, chat_id, 'member', chat_to], member, () => { })
-
-    Firestore.get.collectionWhere([...pathHistory, user?.id, group_id], [['chat_id', '==', chat_id]], (data) => {
-
-      const currentHistory = data[0]
-      const currentKeyHistory = currentHistory.id
-
-      Firestore.update.doc([...pathHistory, user.id, group_id, currentKeyHistory], [
-        { key: "time", value: _time },
-        { key: "last_message", value: message },
-        { key: "read", value: "0" },
-        { key: "sender_id", value: user?.id },
-      ], () => { })
-
-      Firestore.get.collection([...pathHistory, chat_to, group_id], (dt) => {
-        if (dt) {
-          for (let key in dt) {
-            if (dt[key].data.chat_id == chat_id) {
-              Firestore.update.doc([...pathHistory, chat_to, group_id, dt[key].id], [
-                { key: "time", value: _time },
-                { key: "last_message", value: message },
-                { key: "read", value: "0" },
-                { key: "sender_id", value: user?.id },
-              ], () => { })
-              break;
-            }
-          }
-        }
+    Firestore.get.collectionIds([...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
+      Firestore.add.doc([...pathChat, chat_id, 'member', arr[0]], member, () => { })
+    })
+    Firestore.get.collectionIds([...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
+      Firestore.add.doc([...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
+    })
+    Firestore.get.collectionIds([...pathHistory], [['chat_id', '==', chat_id]], (data) => {
+      data.forEach((x) => {
+        Firestore.update.doc([...pathHistory, x], [
+          { key: "time", value: _time },
+          { key: "last_message", value: message },
+          { key: "read", value: "0" },
+          { key: "sender_id", value: user?.id },
+        ], () => { })
       })
     })
   }
@@ -235,11 +248,16 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.add.doc([...pathUsers, user.id], {
-      username: LibUtils.ucwords(username || user.name),
-      image: image || user.image,
-      deleted: deleted ? '1' : '0'
-    }, () => { })
+    Firestore.get.collectionIds([...pathUsers], [["user_id", "==", user?.id]], (arr) => {
+      if (arr.length == 0) {
+        Firestore.add.collection([...pathUsers], {
+          user_id: user?.id,
+          username: LibUtils.ucwords(username || user.name),
+          image: image || user.image,
+          deleted: deleted ? '1' : '0'
+        }, () => { })
+      }
+    })
   }
   function getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
     const user = UserClass?.state?.()?.get?.()
@@ -248,11 +266,9 @@ export default function m(): ChattingLibReturn {
     let chattochecks: string[] = [];
     const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
       chattochecks.push(id + '+' + opposite_id)
-      Firestore.get.collection([...pathHistory, id, group_id || group_id], (dt) => {
-
+      Firestore.get.collectionWhere([...pathHistory], [["user_id", "==", user.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
         if (dt) {
-          let s: any[] = dt.filter((s: any) => s.data.chat_to == opposite_id)
-
+          let s: any[] = dt
           if (s.length > 0) {
             callback(s[0]?.data?.chat_id)
           } else {
@@ -292,6 +308,7 @@ export default function m(): ChattingLibReturn {
     listenUser: listenUser,
     setUser: setUser,
     getChatId: getChatId,
+    makeId: makeid
   }
 
 }

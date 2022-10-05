@@ -24,9 +24,9 @@ export default function m(chat_to: string): [string, any] {
 
   useEffect(() => {
     if (chat_to) {
-      const path = ChattingLib().pathUsers
-      Firestore.listen.doc([...path, chat_to], (snapshoot) => {
-        update(snapshoot)
+      const pathUser = ChattingLib().pathUsers
+      Firestore.listen.collection([...pathUser], [["user_id", '==', chat_to]], [], (snapshoot) => {
+        update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
       })
     }
   }, [chat_to])

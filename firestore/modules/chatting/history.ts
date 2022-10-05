@@ -56,15 +56,19 @@ export default function m(): ChatHistoryReturn {
       hist.forEach((item: any) => {
         const path = ChattingLib().pathUsers
         const _snapshoot = item.data
-        item['user_id'] = _snapshoot.sender_id
-        item['chat_to'] = _snapshoot.chat_to
-        item['msg'] = _snapshoot.last_message
-        item['time'] = _snapshoot.time
-        item['read'] = user.id == _snapshoot.sender_id ? 1 : _snapshoot.read
 
-        Firestore.get.doc([...path, _snapshoot.chat_to], [], (snap) => {
+        // item['user_id'] = _snapshoot?.user_id
+        item['user_id'] = _snapshoot?.sender_id
+        item['chat_id'] = _snapshoot?.chat_id
+        item['chat_to'] = _snapshoot?.chat_to
+        item['msg'] = _snapshoot?.last_message
+        item['time'] = _snapshoot?.time
+        item['read'] = _snapshoot.read
+        // item['read'] = _snapshoot.sender_id == user.id ? '1' : _snapshoot.read
+
+        Firestore.get.collectionWhere([...path], [["user_id", "==", _snapshoot.chat_to]], (snap) => {
           if (snap) {
-            histories.push({ ...item, ...item.data, ...snap.data, id: snap.id })
+            histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
             setvalue()
           } else {
             setvalue()
@@ -78,7 +82,7 @@ export default function m(): ChatHistoryReturn {
     if (!user || !user.hasOwnProperty("id")) return
     const pathHistory = ChattingLib().pathHistory
 
-    Firestore.listen.collection([...pathHistory, user.id, group_id], [], [["time", "desc"]], (snapshoot) => {
+    Firestore.listen.collection([...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [], (snapshoot) => {
       update(snapshoot)
     })
   }

@@ -7,7 +7,6 @@ import { ChattingHistory } from 'esoftplay/cache/chatting/history/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
 import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import';
-import { LibCurl } from 'esoftplay/cache/lib/curl/import';
 import { LibObject } from 'esoftplay/cache/lib/object/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { LibWorkloop } from 'esoftplay/cache/lib/workloop/import';
@@ -125,7 +124,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         return
       }
       if (!chat_id) {
-        ChattingLib().getChatId(chat_to, group_id, chat_id => {
+        ChattingLib().getChatId(chat_to, group_id, (chat_id) => {
           setLoading(false)
           setChat_id(chat_id)
         })
@@ -143,16 +142,16 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     const pathHistory = ChattingLib().pathHistory
 
     Firestore.update.doc([...path, chat_id, 'conversation', chat.id], [{ key: "read", value: "1" }], () => { })
-    Firestore.get.collectionIds([...pathHistory, user.id, group_id], ["time", "==", chat?.data?.time], (snap) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.data?.user_id]], (snap) => {
       const dt = snap?.[0]
       if (dt) {
-        Firestore.update.doc([...pathHistory, user.id, group_id, dt], [{ key: "read", value: "1" }], () => { })
+        Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    Firestore.get.collectionIds([...pathHistory, chat.data.user_id, group_id], ["time", "==", chat?.data?.time], (snap) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.data?.user_id], ["chat_to", "==", user?.id]], (snap) => {
       const dt = snap?.[0]
       if (dt) {
-        Firestore.update.doc([...pathHistory, chat.data.user_id, group_id, dt], [{ key: "read", value: "1" }], () => { })
+        Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
   }
@@ -198,13 +197,13 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   function setNotif(chat_id: string, message: string): void {
     if (!isOpenChat) {
-      new LibCurl('user_notif_chat', {
-        chat_id: chat_id,
-        chat_from: user?.id,
-        chat_to: chat_to,
-        group_id: group_id,
-        message: message
-      })
+      // new LibCurl('user_notif_chat', {
+      //   chat_id: chat_id,
+      //   chat_from: user?.id,
+      //   chat_to: chat_to,
+      //   group_id: group_id,
+      //   message: message
+      // })
     }
   }
 

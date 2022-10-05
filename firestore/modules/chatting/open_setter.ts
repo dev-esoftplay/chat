@@ -14,7 +14,9 @@ export default function m(chat_id: string): void {
     if (chat_id) {
       const path = ChattingLib().pathChat
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      Firestore.update.doc([...path, chat_id, "member", user.id], [{ key: "is_open", value: timestamp }], () => { })
+      Firestore.get.collectionIds([...path, chat_id, "member"], [["user_id", "==", user?.id]], (arr) => {
+        Firestore.update.doc([...path, chat_id, "member", arr[0]], [{ key: "is_open", value: timestamp }], () => { })
+      })
     }
   }
 

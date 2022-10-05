@@ -1,7 +1,7 @@
 // useLibs
 // noPage
 
-import { esp } from 'esoftplay';
+import esp from 'esoftplay/esp';
 import _global from 'esoftplay/_global';
 import { initializeApp } from 'firebase/app';
 import { addDoc, collection, deleteDoc, doc, FieldPath, getDoc, getDocs, initializeFirestore, limit, onSnapshot, orderBy, OrderByDirection, query, setDoc, startAfter, updateDoc, where, WhereFilterOp } from 'firebase/firestore';
@@ -99,15 +99,19 @@ const Firestore = {
       //@ts-ignore
       const colRef = collection(Firestore.db(), ...path)
       let conditionsArray: any = []
-      condition.forEach((c) => {
-        //@ts-ignore
-        conditionsArray.push(where(...c))
-      })
+      if (condition.length > 0) {
+        condition.forEach((c) => {
+          //@ts-ignore
+          conditionsArray.push(where(...c))
+        })
+      }
       let orderArray: any = []
-      order_by.forEach((o) => {
-        //@ts-ignore
-        orderArray.push(orderBy(...o))
-      })
+      if (order_by.length > 0) {
+        order_by.forEach((o) => {
+          //@ts-ignore
+          orderArray.push(orderBy(...o))
+        })
+      }
       // @ts-ignore
       // const fRef = (!condition || condition.length == 0) ? colRef : query(colRef, ...conditionsArray)
       const fRef = (condition && order_by) ? query(colRef, ...conditionsArray, ...orderArray)
@@ -122,15 +126,22 @@ const Firestore = {
         cb(datas)
       }).catch(err)
     },
-    collectionIds(path: string[], condition: [fieldPath?: string | FieldPath, opStr?: WhereFilterOp, value?: unknown], cb: (arr: id[]) => void, err?: (error: any) => void) {
+    collectionIds(path: string[], condition: [fieldPath?: string | FieldPath, opStr?: WhereFilterOp, value?: unknown][], cb: (arr: id[]) => void, err?: (error: any) => void) {
       if (path.length % 2 == 0) {
         console.warn("path untuk akses Collection data tidak boleh berhenti di Doc [Firestore.get.collectionIds]")
         return
       }
       //@ts-ignore
       const colRef = collection(Firestore.db(), ...path)
+      let conditionsArray: any = []
+      if (condition.length > 0) {
+        condition.forEach((c) => {
+          //@ts-ignore
+          conditionsArray.push(where(...c))
+        })
+      }
       //@ts-ignore
-      const fRef = (!condition || condition.length < 3) ? colRef : query(colRef, where(...condition))
+      const fRef = conditionsArray.length > 0 ? query(colRef, ...conditionsArray) : colRef
       let datas: any[] = []
       getDocs(fRef).then((snap) => {
         snap.docs.forEach((doc) => {
@@ -158,15 +169,19 @@ const Firestore = {
       //@ts-ignore
       const colRef = collection(Firestore.db(), ...path)
       let conditionsArray: any = []
-      condition.forEach((c) => {
-        //@ts-ignore
-        conditionsArray.push(where(...c))
-      })
+      if (condition.length > 0) {
+        condition.forEach((c) => {
+          //@ts-ignore
+          conditionsArray.push(where(...c))
+        })
+      }
       let orderArray: any = []
-      order_by.forEach((o) => {
-        //@ts-ignore
-        orderArray.push(orderBy(...o))
-      })
+      if (order_by.length > 0) {
+        order_by.forEach((o) => {
+          //@ts-ignore
+          orderArray.push(orderBy(...o))
+        })
+      }
       let datas: any[] = []
 
       const fRef = (condition && order_by) ? query(colRef, ...conditionsArray, ...orderArray)
@@ -211,9 +226,6 @@ const Firestore = {
       }).catch(err)
     }
   },
-  query() {
-
-  },
   paginate(isStartPage: boolean, path: string[], condition: [fieldPath?: string | FieldPath, opStr?: WhereFilterOp, value?: unknown][], order_by: [fieldPath?: string | FieldPath, directionStr?: OrderByDirection | undefined][], limitItem: number, cb: (dt: any, endReach: boolean) => void, err?: (error: any) => void): void {
     if (path.length % 2 == 0) {
       console.warn("path untuk akses Collection data tidak boleh berhenti di Doc [Firestore.paginate]")
@@ -223,16 +235,20 @@ const Firestore = {
     const colRef = collection(Firestore.db(), ...path)
 
     let conditionsArray: any = []
-    condition.forEach((c) => {
-      //@ts-ignore
-      conditionsArray.push(where(...c))
-    })
+    if (condition.length > 0) {
+      condition.forEach((c) => {
+        //@ts-ignore
+        conditionsArray.push(where(...c))
+      })
+    }
 
     let orderArray: any = []
-    order_by.forEach((o) => {
-      //@ts-ignore
-      orderArray.push(orderBy(...o))
-    })
+    if (order_by.length > 0) {
+      order_by.forEach((o) => {
+        //@ts-ignore
+        orderArray.push(orderBy(...o))
+      })
+    }
 
     const fRef = (conditionsArray.length > 0 && orderArray.length > 0) ? query(colRef, ...conditionsArray, ...orderArray, limit(limitItem))
       : conditionsArray.length > 0 ? query(colRef, ...conditionsArray, limit(limitItem))

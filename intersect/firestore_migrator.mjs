@@ -5,7 +5,17 @@ import fetch from 'node-fetch';
 const require = createRequire(import.meta.url);
 
 
-const config = {
+const config =
+// {
+//   apiKey: "AIzaSyChqxbhmf7Qk_CagMc6v_bPeegXcLNkUqE",
+//   authDomain: "esoftplay-log.firebaseapp.com",
+//   databaseURL: "https://esoftplay-log-default-rtdb.firebaseio.com",
+//   projectId: "esoftplay-log",
+//   storageBucket: "esoftplay-log.appspot.com",
+//   messagingSenderId: "844016531377",
+//   appId: "1:844016531377:web:892688387299a7b0d3af90"
+// }
+{
   "apiKey": "AIzaSyB04JT4JJfFsArIccAjBEn1nwIlg8EVWx4",
   "authDomain": "bigbang-online.firebaseapp.com",
   "databaseURL": "https://bigbang-online.firebaseio.com/",
@@ -74,13 +84,16 @@ function importHistory() {
       if (index != data.length) {
         // insert to firestore
         const cData = data[index]
-        Firestore.add.collection([...historyPath, user_id, "4"], {
+        const lst = Object.keys?.(dataChat?.[cData?.chat_id]?.conversation || {})
+        Firestore.add.collection([...historyPath], {
           chat_id: cData?.chat_id || '',
           chat_to: cData?.user_id || '',
-          last_message: "",
+          last_message: dataChat?.[cData?.chat_id]?.conversation?.[lst[lst.length - 1]]?.msg || '',
           read: "1",
           sender_id: user_id,
           time: cData?.time || '',
+          user_id: user_id,
+          group_id: "4"
         }, () => {
           setTimeout(() => {
             console.log("user_id : " + user_id, 'index ke : ', index, "\n");
@@ -104,7 +117,8 @@ function importHistory() {
       }, 2);
     } else {
       console.log("[DONE INSERT ALL]");
-      sendMessage()
+      process.exit()
+      // sendMessage()
     }
   };
 
@@ -116,7 +130,7 @@ function importChatConversation() {
 
   function loopi(chat_id, lastIndex) {
     const item = chat[chat_id]
-    const conversation = Object.keys(item?.conversation)
+    const conversation = Object.keys(item?.conversation || {})
 
     function loogc(index) {
       if (index != conversation.length) {
@@ -155,7 +169,9 @@ function importChatConversation() {
       }, 2);
     } else {
       console.log("[DONE INSERT ALL]");
-      sendMessage()
+      process.exit()
+
+      // sendMessage()
     }
   }
 
@@ -167,13 +183,14 @@ function importChatMember() {
 
   function loopi(chat_id, lastIndex) {
     const item = chat[chat_id]
-    const member = Object.keys(item?.member)
+    const member = Object.keys(item?.member || {})
 
     function loogc(index) {
       if (index != member.length) {
         setTimeout(() => {
           const memberObj = Object.values(item.member)[index]
           let val = {
+            "user_id": member[index],
             "draf": memberObj?.draf || '',
             "is_typing": false
           }
@@ -182,7 +199,7 @@ function importChatMember() {
             val['is_open'] = memberObj?.is_open || ''
           }
 
-          Firestore.add.doc([...chatPath, chat_id, "member", member[index]], val, () => {
+          Firestore.add.collection([...chatPath, chat_id, "member"], val, () => {
             console.log("[done insert]", chat_id, member[index]);
             loogc(index + 1)
           })
@@ -203,7 +220,9 @@ function importChatMember() {
       }, 2);
     } else {
       console.log("[DONE INSERT ALL]");
-      sendMessage()
+      process.exit()
+
+      // sendMessage()
     }
   }
 
@@ -218,7 +237,8 @@ function importUser() {
     if (index != dt.length) {
       const newIdx = index + 1
 
-      Firestore.add.doc([...userPath, i], {
+      Firestore.add.collection([...userPath], {
+        user_id: i,
         username: ucwords(users?.[i]?.username) || "",
         image: users?.[i]?.image || "",
         deleted: '0'
@@ -237,7 +257,7 @@ function importUser() {
   loop(0);
 }
 
-// importHistory()
-// importChatConversation()
-// importChatMember()
-// importUser()
+importChatConversation()
+// importChatMember() //fix
+// importHistory() //fix
+// importUser() //fix
