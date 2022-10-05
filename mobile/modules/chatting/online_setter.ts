@@ -2,20 +2,21 @@
 // noPage
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
-import { set } from 'firebase/database';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { AppState } from 'react-native';
+import Firestore from './firestore';
 
 export default function m(): void {
-  const cl = useMemo(() => new ChattingLib(), [])
-  const user = UserClass.state().useSelector(s => s)
+  const user = UserClass?.state?.()?.useSelector?.((s: any) => s)
   let time: any = undefined
 
   function _set() {
     if (user && user.hasOwnProperty("id")) {
+      const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      set(cl.ref("users", user.id, "online"), timestamp)
-      // main.child("users").child(user?.id).child("online").set(timestamp)
+      Firestore.get.collectionIds([...path], [["user_id", '==', user.id]], (id) => {
+        Firestore.update.doc([...path, id[0]], [{ key: "online", value: timestamp }], () => { })
+      })
     }
   }
 

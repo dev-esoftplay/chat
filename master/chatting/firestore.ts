@@ -35,7 +35,6 @@ const Firestore = {
   },
   db() {
     if (!_global.firebaseFirestore)
-      // _global.firebaseFirestore = getFirestore(_global.firebaseApp)
       _global.firebaseFirestore = initializeFirestore(_global.firebaseApp, {
         experimentalForceLongPolling: true
       })

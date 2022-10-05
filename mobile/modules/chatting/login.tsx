@@ -26,7 +26,7 @@ export default function m(props: ChatLoginProps): any {
         UserClass.create(res).then(() => {
           LibProgress.hide()
           LibNavigation.reset('chat/index')
-          new ChattingLib().setUser()
+          ChattingLib().setUser()
         })
       },
       (msg) => {

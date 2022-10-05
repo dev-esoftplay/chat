@@ -15,6 +15,7 @@ export interface ChatIndexProps {
 
 export default function m(props: ChatIndexProps): any {
   ChattingOnline_setter()
+  // const { data, update, deleteCache } = ChattingHistory()
   const { data, update, deleteCache } = ChattingHistory()
 
   useEffect(() => {
@@ -23,6 +24,8 @@ export default function m(props: ChatIndexProps): any {
 
   return (
     <View style={{ flex: 1, paddingTop: LibStyle.STATUSBAR_HEIGHT }} >
+      <LibTextstyle text='chatSendNew' textStyle='headline' style={{ color: 'white' }} />
+
       <LibList
         data={data}
         renderItem={(item) => (
