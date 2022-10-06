@@ -8,7 +8,6 @@ import { useEffect } from 'react';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import moment from 'esoftplay/moment';
 moment().locale('id')
-const Firestore = esp.mod('chatting/firestore')
 
 export default function m(chat_to: string): [string, any] {
   const [status, setStatus] = useSafeState<string>("Loading...")
@@ -25,8 +24,11 @@ export default function m(chat_to: string): [string, any] {
   useEffect(() => {
     if (chat_to) {
       const pathUser = ChattingLib().pathUsers
-      Firestore.listen.collection([...pathUser], [["user_id", '==', chat_to]], [], (snapshoot) => {
-        update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
+      const Firestore = esp.mod('chatting/firestore')
+      Firestore.listen.collection([...pathUser], [["user_id", '==', chat_to]], [], (snapshoot: any) => {
+        if (snapshoot.length > 0) {
+          update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
+        }
       })
     }
   }, [chat_to])

@@ -19,8 +19,6 @@ import moment from 'esoftplay/moment';
 import { useEffect } from 'react';
 moment().locale('id')
 
-const Firestore = esp.mod('chatting/firestore');
-
 export interface ChattingItem {
   key: string,
   msg: string,
@@ -142,15 +140,16 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   function setRead(chat: any) {
     const path = ChattingLib().pathChat
     const pathHistory = ChattingLib().pathHistory
+    const Firestore = esp.mod('chatting/firestore');
 
     Firestore.update.doc([...path, chat_id, 'conversation', chat.id], [{ key: "read", value: "1" }], () => { })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.data?.user_id]], (snap) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.data?.user_id]], (snap:any) => {
       const dt = snap?.[0]
       if (dt) {
         Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.data?.user_id], ["chat_to", "==", user?.id]], (snap) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.data?.user_id], ["chat_to", "==", user?.id]], (snap:any) => {
       const dt = snap?.[0]
       if (dt) {
         Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
