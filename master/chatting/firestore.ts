@@ -1,9 +1,12 @@
 // useLibs
 // noPage
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import esp from 'esoftplay/esp';
 import _global from 'esoftplay/_global';
 import { initializeApp } from 'firebase/app';
+import { initializeAuth, signInAnonymously } from 'firebase/auth';
+import { getReactNativePersistence } from 'firebase/auth/react-native';
 import { addDoc, collection, deleteDoc, doc, FieldPath, getDoc, getDocs, initializeFirestore, limit, onSnapshot, orderBy, OrderByDirection, query, setDoc, startAfter, updateDoc, where, WhereFilterOp } from 'firebase/firestore';
 
 export interface DataId {
@@ -25,6 +28,8 @@ const Firestore = {
       if (esp.config('firebase').hasOwnProperty('projectId')) {
         if (!_global.firebaseapp) {
           _global.firebaseApp = initializeApp(esp.config("firebase"), "firestore-init");
+          const appAuth = initializeAuth(_global.firebaseapp, { persistence: getReactNativePersistence(AsyncStorage) })
+          signInAnonymously(appAuth);
         }
       } else {
         throw "ERROR : firebase projectId not found in config.json"
