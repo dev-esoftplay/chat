@@ -26,9 +26,9 @@ const Firestore = {
   init() {
     if (esp.config().hasOwnProperty('firebase')) {
       if (esp.config('firebase').hasOwnProperty('projectId')) {
-        if (!_global.firebaseapp) {
+        if (!_global.firebaseApp) {
           _global.firebaseApp = initializeApp(esp.config("firebase"), "firestore-init");
-          const appAuth = initializeAuth(_global.firebaseapp, { persistence: getReactNativePersistence(AsyncStorage) })
+          const appAuth = initializeAuth(_global.firebaseApp, { persistence: getReactNativePersistence(AsyncStorage) })
           signInAnonymously(appAuth);
         }
       } else {
