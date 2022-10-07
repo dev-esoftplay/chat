@@ -1,78 +1,32 @@
 {
-  "1664980443": {
-    "conversation": {
-      "-NDcZL122mb0gqRJLWfk": {
-        "key": "-NDcZL122mb0gqRJLWfk",
-        "msg": "hii",
-        "read": "0",
-        "time": "1664980443",
-        "user_id": "195856"
-      }
-    },
-    "member": {
-      "195856": {
-        "is_typing": false
-      },
-      "197871": {
-        "is_typing": false
-      }
-    }
-  },
-  "1665003635": {
-    "conversation": {
-      "-NDdwoARYBID1kGB--Tn": {
-        "key": "-NDdwoARYBID1kGB--Tn",
-        "msg": "Hi",
-        "read": "0",
-        "time": "1665003635",
-        "user_id": "198708"
-      }
-    },
-    "member": {
-      "198219": {
-        "is_typing": false
-      },
-      "198708": {
-        "is_typing": false
-      }
-    }
-  },
   "1665038085": {
     "conversation": {
-      "-NDg3ldmnTd5owXbvXTb": {
+      "-NDgEzO6RuP95hSMtZxo": {
         "attach": {
           "buttons": {
             "1644": [
               {
                 "enabled": true,
-                "module": "bigbang/payment",
-                "text": "Setuju & Bayar",
-                "type": "success"
-              },
-              {
-                "enabled": true,
-                "text": "Tolak",
-                "type": "failed",
-                "url": "community_quotation_cancel/2146"
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1979"
               }
             ],
             "197143": [
               {
                 "enabled": true,
-                "module": "quotation/detail",
-                "text": "Revisi",
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
                 "type": "success",
-                "url": "community_quotation_list_detail/2146"
-              },
-              {
-                "enabled": true,
-                "text": "Batal",
-                "type": "failed",
-                "url": "community_quotation_cancel/2146"
+                "url": "community_booking_talent_list_detail/1979"
               }
             ]
           },
           "data": {
+            "amount": 30000,
+            "booking_id": 1979,
             "chat_id": "1665038085",
             "chat_to": "1644",
             "date": "06 Okt 2022 - 06 Okt 2022 (1 hari)",
@@ -80,7 +34,7 @@
             "date_start": "2022-10-06",
             "deleted": 0,
             "description": "350.000",
-            "is_cancel": 0,
+            "duration": 2,
             "items": [
               {
                 "item_price": "350000",
@@ -96,70 +50,51 @@
             "request_id": 2259,
             "request_title": "Fee SPG event damai indah golf tangerang",
             "services": "SPG / SPB",
-            "status": 1,
-            "status_quotation": 0,
+            "status": 0,
+            "status_payment": "9",
+            "status_quotation": 1,
             "talent_id": 4633,
             "type": 1
           },
           "description": "350.000",
-          "module": "quotation/detail",
-          "title": "Permintaan Jasa Talent",
-          "url": "community_quotation_list_detail/2146"
+          "title": "Permintaan Jasa Talent"
         },
-        "key": "-NDg3ldmnTd5owXbvXTb",
-        "msg": "Quotation telah dibuat",
-        "read": "0",
-        "time": "1665039276",
-        "user_id": "197143"
-      }
-    },
-    "member": {
-      "1644": {
-        "is_open": "1665039991",
-        "is_typing": false
-      },
-      "197143": {
-        "is_open": "1665039439",
-        "is_typing": false
+        "key": "-NDgEzO6RuP95hSMtZxo",
+        "msg": "Quotation telah diterima",
+        "read": "1",
+        "time": "1665042216",
+        "user_id": "1644"
       }
     }
   },
   "1665038123": {
     "conversation": {
-      "-NDg37mP15JS0DAcMbRw": {
+      "-NDgF5-Vxy_wfdqHeukd": {
         "attach": {
           "buttons": {
             "1644": [
               {
                 "enabled": true,
-                "module": "bigbang/payment",
-                "text": "Setuju & Bayar",
-                "type": "success"
-              },
-              {
-                "enabled": true,
-                "text": "Tolak",
-                "type": "failed",
-                "url": "community_quotation_cancel/2145"
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1980"
               }
             ],
             "197157": [
               {
                 "enabled": true,
-                "module": "quotation/detail",
-                "text": "Revisi",
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
                 "type": "success",
-                "url": "community_quotation_list_detail/2145"
-              },
-              {
-                "enabled": true,
-                "text": "Batal",
-                "type": "failed",
-                "url": "community_quotation_cancel/2145"
+                "url": "community_booking_talent_list_detail/1980"
               }
             ]
           },
           "data": {
+            "amount": 30000,
+            "booking_id": 1980,
             "chat_id": "1665038123",
             "chat_to": "1644",
             "date": "06 Okt 2022 - 06 Okt 2022 (1 hari)",
@@ -167,7 +102,7 @@
             "date_start": "2022-10-06",
             "deleted": 0,
             "description": "350.000",
-            "is_cancel": 0,
+            "duration": 2,
             "items": [
               {
                 "item_price": "350000",
@@ -183,70 +118,51 @@
             "request_id": 2260,
             "request_title": "Fee SPG event damai indah golf tangerang ",
             "services": "SPG / SPB",
-            "status": 1,
-            "status_quotation": 0,
+            "status": 0,
+            "status_payment": "8",
+            "status_quotation": 1,
             "talent_id": 4629,
             "type": 1
           },
           "description": "350.000",
-          "module": "quotation/detail",
-          "title": "Permintaan Jasa Talent",
-          "url": "community_quotation_list_detail/2145"
+          "title": "Permintaan Jasa Talent"
         },
-        "key": "-NDg37mP15JS0DAcMbRw",
-        "msg": "Quotation telah dibuat",
-        "read": "0",
-        "time": "1665039109",
-        "user_id": "197157"
-      }
-    },
-    "member": {
-      "1644": {
-        "is_open": "1665039991",
-        "is_typing": false
-      },
-      "197157": {
-        "is_open": "1665039530",
-        "is_typing": false
+        "key": "-NDgF5-Vxy_wfdqHeukd",
+        "msg": "Quotation telah diterima",
+        "read": "1",
+        "time": "1665042243",
+        "user_id": "1644"
       }
     }
   },
   "1665038174": {
     "conversation": {
-      "-NDg4FK1fGVdEzW98rQY": {
+      "-NDgEsFv0aGAAcWjHWuH": {
         "attach": {
           "buttons": {
             "1644": [
               {
                 "enabled": true,
-                "module": "bigbang/payment",
-                "text": "Setuju & Bayar",
-                "type": "success"
-              },
-              {
-                "enabled": true,
-                "text": "Tolak",
-                "type": "failed",
-                "url": "community_quotation_cancel/2147"
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1978"
               }
             ],
             "197158": [
               {
                 "enabled": true,
-                "module": "quotation/detail",
-                "text": "Revisi",
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
                 "type": "success",
-                "url": "community_quotation_list_detail/2147"
-              },
-              {
-                "enabled": true,
-                "text": "Batal",
-                "type": "failed",
-                "url": "community_quotation_cancel/2147"
+                "url": "community_booking_talent_list_detail/1978"
               }
             ]
           },
           "data": {
+            "amount": 30000,
+            "booking_id": 1978,
             "chat_id": "1665038174",
             "chat_to": "1644",
             "date": "06 Okt 2022 - 06 Okt 2022 (1 hari)",
@@ -254,7 +170,7 @@
             "date_start": "2022-10-06",
             "deleted": 0,
             "description": "350.000",
-            "is_cancel": 0,
+            "duration": 2,
             "items": [
               {
                 "item_price": "350000",
@@ -270,62 +186,51 @@
             "request_id": 2261,
             "request_title": "Fee SPG event damai indah golf tangerang ",
             "services": "SPG / SPB",
-            "status": 1,
-            "status_quotation": 0,
+            "status": 0,
+            "status_payment": "8",
+            "status_quotation": 1,
             "talent_id": 4630,
             "type": 1
           },
           "description": "350.000",
-          "module": "quotation/detail",
-          "title": "Permintaan Jasa Talent",
-          "url": "community_quotation_list_detail/2147"
+          "title": "Permintaan Jasa Talent"
         },
-        "key": "-NDg4FK1fGVdEzW98rQY",
-        "msg": "Quotation telah dibuat",
+        "key": "-NDgEsFv0aGAAcWjHWuH",
+        "msg": "Quotation telah diterima",
         "read": "0",
-        "time": "1665039403",
-        "user_id": "197158"
-      }
-    },
-    "member": {
-      "1644": {
-        "is_open": "1665039991",
-        "is_typing": false
-      },
-      "197158": {
-        "is_open": "1665040106",
-        "is_typing": false
+        "time": "1665042187",
+        "user_id": "1644"
       }
     }
   },
   "1665038210": {
     "conversation": {
-      "-NDg-hEeurDadXKY-7Qx": {
+      "-NDgYCNecYKpjYaAqcmN": {
         "attach": {
           "buttons": {
             "1644": [
               {
                 "enabled": true,
-                "text": "Batalkan",
-                "type": "success"
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1981"
               }
             ],
             "197199": [
               {
                 "enabled": true,
-                "module": "quotation/index",
-                "text": "Terima & Buat quotation",
-                "type": "success"
-              },
-              {
-                "enabled": false,
-                "text": "Tolak",
-                "type": "failed",
-                "url": "community_request?req_id=2262"
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1981"
               }
             ]
           },
           "data": {
+            "amount": 30000,
+            "booking_id": 1981,
             "chat_id": "1665038210",
             "chat_to": "1644",
             "date": "06 Okt 2022 - 06 Okt 2022 (1 hari)",
@@ -333,120 +238,86 @@
             "date_start": "2022-10-06",
             "deleted": 0,
             "description": "350.000",
-            "is_cancel": 0,
-            "price_total": 0,
-            "quotation_id": 0,
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "350000",
+                "item_qty": 1,
+                "item_title": "fee event damai indah serpong",
+                "item_total": 350000
+              }
+            ],
+            "price_total": 350000,
+            "quotation_code": "QC/2022/10/06/2148",
+            "quotation_id": 2148,
             "request_code": "BC/2022/10/06/2262",
             "request_id": 2262,
             "request_title": "Fee SPG event damai indah golf tangerang ",
             "services": "SPG / SPB",
             "status": 0,
-            "status_quotation": 0,
+            "status_payment": "8",
+            "status_quotation": 1,
             "talent_id": 4632,
             "type": 1
           },
           "description": "350.000",
           "title": "Permintaan Jasa Talent"
         },
-        "key": "-NDg-hEeurDadXKY-7Qx",
-        "msg": "Permintaan Jasa Talent",
+        "key": "-NDgYCNecYKpjYaAqcmN",
+        "msg": "Quotation telah diterima",
         "read": "0",
-        "time": "1665038210",
+        "time": "1665047254",
         "user_id": "1644"
       }
     },
     "member": {
-      "1644": {
-        "is_open": "1665039991",
-        "is_typing": false
-      },
       "197199": {
-        "is_typing": false
+        "is_open": "1665047923"
       }
     }
   },
   "1665038254": {
     "conversation": {
-      "-NDg-s1EmkhxMtpliZGu": {
-        "attach": {
-          "buttons": {
-            "1644": [
-              {
-                "enabled": true,
-                "text": "Batalkan",
-                "type": "success"
-              }
-            ],
-            "197148": [
-              {
-                "enabled": true,
-                "module": "quotation/index",
-                "text": "Terima & Buat quotation",
-                "type": "success"
-              },
-              {
-                "enabled": false,
-                "text": "Tolak",
-                "type": "failed",
-                "url": "community_request?req_id=2263"
-              }
-            ]
-          },
-          "data": {
-            "chat_id": "1665038254",
-            "chat_to": "1644",
-            "date": "06 Okt 2022 - 06 Okt 2022 (1 hari)",
-            "date_end": "2022-10-06",
-            "date_start": "2022-10-06",
-            "deleted": 0,
-            "description": "350.000",
-            "is_cancel": 1,
-            "price_total": 0,
-            "quotation_id": 0,
-            "request_code": "BC/2022/10/06/2263",
-            "request_id": 2263,
-            "request_title": "Fee SPB event damai indah golf tangerang ",
-            "services": "SPG / SPB",
-            "status": 2,
-            "status_quotation": 0,
-            "talent_id": 4631,
-            "type": 1
-          },
-          "description": "350.000",
-          "title": "Permintaan Jasa Talent"
-        },
-        "key": "-NDg-s1EmkhxMtpliZGu",
-        "msg": "Permintaan Jasa Talent",
-        "read": "0",
-        "time": "1665038254",
+      "-NDgYNkMQgw1_pUEP9hH": {
+        "key": "-NDgYNkMQgw1_pUEP9hH",
+        "msg": "Tolong di revisi jadi 300rb ya",
+        "read": "1",
+        "time": "1665047301",
         "user_id": "1644"
       },
-      "-NDg6RewuylR5vZgJNKC": {
+      "-NDgZyXSX9Ah70u86GPS": {
+        "key": "-NDgZyXSX9Ah70u86GPS",
+        "msg": "Iya kak sudah 🙏",
+        "read": "1",
+        "time": "1665047718",
+        "user_id": "197148"
+      },
+      "-NDgcwfXX9wxWf4Bas6X": {
         "attach": {
           "buttons": {
             "1644": [
               {
                 "enabled": true,
-                "text": "Batalkan",
-                "type": "success"
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_list_detail/1982"
               }
             ],
             "197148": [
               {
                 "enabled": true,
-                "module": "quotation/index",
-                "text": "Terima & Buat quotation",
-                "type": "success"
-              },
-              {
-                "enabled": false,
-                "text": "Tolak",
-                "type": "failed",
-                "url": "community_request?req_id=2264"
+                "from": "community/order",
+                "module": "quotation/order_detail",
+                "text": "Lihat Detail",
+                "type": "success",
+                "url": "community_booking_talent_list_detail/1982"
               }
             ]
           },
           "data": {
+            "amount": 30000,
+            "booking_id": 1982,
             "chat_id": "1665038254",
             "chat_to": "1644",
             "date": "06 Okt 2022 - 06 Okt 2022 (1 hari)",
@@ -454,35 +325,42 @@
             "date_start": "2022-10-06",
             "deleted": 0,
             "description": "300.000",
-            "is_cancel": 0,
-            "price_total": 0,
-            "quotation_id": 0,
+            "discount": "0",
+            "duration": 2,
+            "items": [
+              {
+                "item_price": "300000",
+                "item_qty": 1,
+                "item_title": "Fee event damai indah golf",
+                "item_total": 300000
+              }
+            ],
+            "price_total": 300000,
+            "quotation_code": "QC/2022/10/06/2149",
+            "quotation_id": 2149,
             "request_code": "BC/2022/10/06/2264",
             "request_id": 2264,
             "request_title": "Fee SPB event damai indah golf tangerang ",
             "services": "SPG / SPB",
             "status": 0,
-            "status_quotation": 0,
+            "status_payment": "8",
+            "status_quotation": 1,
             "talent_id": 4631,
             "type": 1
           },
           "description": "300.000",
           "title": "Permintaan Jasa Talent"
         },
-        "key": "-NDg6RewuylR5vZgJNKC",
-        "msg": "Permintaan Jasa Talent",
+        "key": "-NDgcwfXX9wxWf4Bas6X",
+        "msg": "Quotation telah diterima",
         "read": "0",
-        "time": "1665039977",
+        "time": "1665048759",
         "user_id": "1644"
       }
     },
     "member": {
-      "1644": {
-        "is_open": "1665039991",
-        "is_typing": false
-      },
       "197148": {
-        "is_typing": false
+        "is_open": "1665047869"
       }
     }
   }
