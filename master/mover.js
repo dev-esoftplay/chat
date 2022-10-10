@@ -94,9 +94,8 @@ const be = `//esoftplay-chatting`
 const toBe = `
       if (esp.config('firebase').hasOwnProperty('apiKey')) {
         try {
-          const ChattingFirebase = esp.mod('chatting/firebase')
-          if (ChattingFirebase)
-            ChattingFirebase?.signInAnonymously?.();
+          const Firestore = esp.mod('chatting/firestore')
+          Firestore?.init?.()
           if (user){
             const ChattingLib = esp.mod('chatting/lib')
             new ChattingLib().setUser()
