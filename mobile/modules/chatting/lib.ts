@@ -79,7 +79,9 @@ export default function m(): ChattingLibReturn {
       draf: ''
     }
 
-    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, () => { })
+    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
+      msg['key'] = dt?.id
+    })
     /* me */
     Firestore.add.collection([...pathChat, chat_id, 'member'], memberMe, () => { })
     /* notMe */
