@@ -267,6 +267,7 @@ export default function m(): ChattingLibReturn {
     if (!user) return
     let chattochecks: string[] = [];
     const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
+      if (!opposite_id) return
       chattochecks.push(id + '+' + opposite_id)
       Firestore.get.collectionWhere([...pathHistory], [["user_id", "==", user.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
         if (dt) {
