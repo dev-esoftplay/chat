@@ -7,7 +7,7 @@ import _global from 'esoftplay/_global';
 import { initializeApp } from 'firebase/app';
 import { initializeAuth, signInAnonymously } from 'firebase/auth';
 import { getReactNativePersistence } from 'firebase/auth/react-native';
-import { addDoc, collection, deleteDoc, doc, FieldPath, getDoc, getDocs, initializeFirestore, limit, onSnapshot, orderBy, OrderByDirection, query, setDoc, startAfter, updateDoc, where, WhereFilterOp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, FieldPath, getDoc, getDocs, initializeFirestore, limit, onSnapshot, orderBy, OrderByDirection, query, setDoc, startAfter, updateDoc, where, WhereFilterOp, writeBatch } from 'firebase/firestore';
 
 export interface DataId {
   id: string,
@@ -226,6 +226,22 @@ const Firestore = {
       const objVal = Object.assign({}, ...val)
       const colRef = doc(Firestore.db(), ...path)
       updateDoc(colRef, objVal).then((e) => {
+        cb()
+      }).catch(err)
+    },
+    batchDoc(path: string[], valueToUpdate: any[], cb: () => void, err?: (error: any) => void) {
+      if (path.length % 2 > 0) {
+        console.warn("path untuk akses Doc data tidak boleh berhenti di Collection [Firestore.update.doc]")
+        return
+      }
+      const batch = writeBatch(Firestore?.db());
+      const sfRef = doc(Firestore?.db(), ...path);
+
+      valueToUpdate.forEach((e) => {
+        batch.update(sfRef, e);
+      })
+
+      batch.commit().then((res) => {
         cb()
       }).catch(err)
     }

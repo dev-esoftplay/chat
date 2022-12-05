@@ -194,7 +194,7 @@ export default function m(): ChattingLibReturn {
   function chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
     const user = UserClass?.state?.()?.get?.()
 
-    if (user) return
+    if (!user) return
     Firestore.get.doc([...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
       if (dt) {
         callback({ ...dt, key: dt.id });

@@ -11,7 +11,7 @@ export default function m(chat_id: string): void {
   let time: any = undefined
 
   function _set() {
-    if (chat_id) {
+    if (chat_id && user) {
       const path = ChattingLib().pathChat
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
       const Firestore = esp.mod('chatting/firestore')
