@@ -1,6 +1,7 @@
 // useLibs
 // noPage
 import { esp, useGlobalReturn } from 'esoftplay';
+import Firestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
@@ -64,7 +65,6 @@ export default function m(): ChatHistoryReturn {
         item['time'] = _snapshoot?.time
         item['read'] = _snapshoot.read
         // item['read'] = _snapshoot.sender_id == user.id ? '1' : _snapshoot.read
-        const Firestore = esp.mod('chatting/firestore')
         Firestore.get.collectionWhere([...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
           if (snap) {
             histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
@@ -78,9 +78,8 @@ export default function m(): ChatHistoryReturn {
   }
 
   function _get() {
-    if (!user || !user.hasOwnProperty("id")) return
+    if (!user || !user.hasOwnProperty("id") || !group_id) return
     const pathHistory = ChattingLib().pathHistory
-    const Firestore = esp.mod('chatting/firestore')
     Firestore.listen.collection([...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [], (snapshoot: any) => {
       update(snapshoot)
     })

@@ -2,11 +2,11 @@
 // noPage
 
 import { esp } from "esoftplay"
+import Firestore, { DataId, updateValue } from "esoftplay-firestore"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
 import { serverTimestamp } from "firebase/firestore"
 import { Alert } from "react-native"
-import Firestore, { DataId } from "../chatting/firestore"
 
 
 export interface ChattingLibReturn {
@@ -123,6 +123,7 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
+
     const _time = (new Date().getTime() / 1000).toFixed(0)
     let msg: any = {
       msg: message,
@@ -157,9 +158,13 @@ export default function m(): ChattingLibReturn {
     Firestore.get.collectionIds([...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
       Firestore.add.doc([...pathChat, chat_id, 'member', arr[0]], member, () => { })
     })
+
+    if (!chat_to) return
     Firestore.get.collectionIds([...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
       Firestore.add.doc([...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
     })
+
+    if (!chat_id) return
     Firestore.get.collectionIds([...pathHistory], [['chat_id', '==', chat_id]], (data) => {
       data.forEach((x) => {
         Firestore.update.doc([...pathHistory, x], [
@@ -197,7 +202,7 @@ export default function m(): ChattingLibReturn {
     if (!user) return
     Firestore.get.doc([...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
       if (dt) {
-        callback({ ...dt, key: dt.id });
+        callback({ key: dt.id, ...dt.data });
       } else {
         callback(null)
       }
@@ -228,11 +233,11 @@ export default function m(): ChattingLibReturn {
       callback(dt);
     })
   }
-  function chatUpdate(key: string, chat_id: string, value: any): void {
+  function chatUpdate(key: string, chat_id: string, value: updateValue[]): void {
     const user = UserClass?.state?.()?.get?.()
     if (!key) return
     if (!user) return
-    Firestore.add.doc([...pathChat, chat_id, 'conversation', key], value, () => { })
+    Firestore.update.doc([...pathChat, chat_id, 'conversation', key], value, () => { })
   }
   function listenUser(user_id: string, callback: (user: any) => void) {
     const user = UserClass?.state?.()?.get?.()
@@ -268,8 +273,9 @@ export default function m(): ChattingLibReturn {
     let chattochecks: string[] = [];
     const check = (id: string, opposite_id: string, callback: (chat_id: string) => void) => {
       if (!opposite_id) return
+      if (!group_id) return
       chattochecks.push(id + '+' + opposite_id)
-      Firestore.get.collectionWhere([...pathHistory], [["user_id", "==", user.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
+      Firestore.get.collectionWhere([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
         if (dt) {
           let s: any[] = dt
           if (s.length > 0) {

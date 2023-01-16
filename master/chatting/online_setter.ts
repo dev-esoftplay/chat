@@ -1,6 +1,6 @@
 // useLibs
 // noPage
-import { esp } from 'esoftplay';
+import Firestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import { useEffect } from 'react';
@@ -14,8 +14,8 @@ export default function m(): void {
     if (user && user.hasOwnProperty("id")) {
       const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
-      const Firestore = esp.mod('chatting/firestore')
-      Firestore.get.collectionIds([...path], [["user_id", '==', user.id]], (id: any) => {
+
+      Firestore.get.collectionIds([...path], [["user_id", '==', user?.id]], (id: any) => {
         if (id.length > 0) {
           Firestore.update.doc([...path, id?.[0]], [{ key: "online", value: timestamp }], () => { })
         }

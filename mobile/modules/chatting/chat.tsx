@@ -3,6 +3,7 @@
 // noPage
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { esp, useSafeState } from 'esoftplay';
+import Firestore from 'esoftplay-firestore';
 import { ChattingHistory } from 'esoftplay/cache/chatting/history/import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
@@ -80,7 +81,7 @@ export interface ChatChatReturnUser {
 
 export interface ChatChatReturn {
   chat_id: string,
-  send: (message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void) => void,
+  send: (message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void, _chat_id?: string) => void,
   chat_to_user: ChatChatReturnUser,
   chat_to_online: string,
   loadPrevious: (firstKey: string) => void,
@@ -140,18 +141,17 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   function setRead(chat: any) {
     const path = ChattingLib().pathChat
     const pathHistory = ChattingLib().pathHistory
-    const Firestore = esp.mod('chatting/firestore');
 
     if (!user || !user.hasOwnProperty("id")) return
 
-    Firestore.update.doc([...path, chat_id, 'conversation', chat.id], [{ key: "read", value: "1" }], () => { })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.data?.user_id]], (snap:any) => {
+    Firestore.update.doc([...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.data?.user_id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
         Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.data?.user_id], ["chat_to", "==", user?.id]], (snap:any) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.data?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
         Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
@@ -210,7 +210,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     }
   }
 
-  function send(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void) {
+  function send(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void, _chat_id?: string) {
     const _time = (new Date().getTime() / 1000).toFixed(0)
     let dummyMsg: any = {
       "data": {
@@ -225,11 +225,12 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
       dummyMsg.data["attach"] = attach
     }
     setData(LibObject.unshift(data, dummyMsg)())
+    const lchat_id = _chat_id || chat_id
 
-    if (chat_id) {
-      ChattingLib().chatSend(chat_id, chat_to, message, attach, (msg: ChattingItem) => {
-        callback && callback(chat_id, msg)
-        setNotif(chat_id, msg.msg)
+    if (lchat_id) {
+      ChattingLib().chatSend(lchat_id, chat_to, message, attach, (msg: ChattingItem) => {
+        callback && callback(lchat_id, msg)
+        setNotif(lchat_id, msg.msg)
       })
     } else {
       ChattingLib().chatSendNew(chat_to, message, attach, true, (msg: ChattingItem, chat_id: string) => {
