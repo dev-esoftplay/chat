@@ -95,7 +95,7 @@ const toBe = `
       if (esp.config('firebase').hasOwnProperty('apiKey')) {
         try {
           const Firestore = esp.mod('chatting/firestore')
-          Firestore?.init?.()
+          Firestore()?.init?.()
           if (user){
             const ChattingLib = esp.mod('chatting/lib')
             new ChattingLib().setUser()
