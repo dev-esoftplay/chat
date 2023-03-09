@@ -1,23 +1,22 @@
 // @ts-ignore
 // useLibs
 // noPage
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { esp, useSafeState } from 'esoftplay';
 import Firestore from 'esoftplay-firestore';
-import { ChattingHistory } from 'esoftplay/cache/chatting/history/import';
+import { ChattingCache } from 'esoftplay/cache/chatting/cache/import';
+import { ChattingCache_sendProperty } from 'esoftplay/cache/chatting/cache_send/import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
 import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import';
+import { ChattingPaginate } from 'esoftplay/cache/chatting/paginate/import';
 import { LibCurl } from 'esoftplay/cache/lib/curl/import';
 import { LibObject } from 'esoftplay/cache/lib/object/import';
-import { LibUtils } from 'esoftplay/cache/lib/utils/import';
-import { LibWorkloop } from 'esoftplay/cache/lib/workloop/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
-import { UserData } from 'esoftplay/cache/user/data/import';
 
 import moment from 'esoftplay/moment';
-import { useEffect } from 'react';
+import { DocumentData, QuerySnapshot } from 'firebase/firestore';
+import { useEffect, useRef } from 'react';
 moment().locale('id')
 
 export interface ChattingItem {
@@ -59,19 +58,6 @@ export interface ChattingChatProps {
   chat_id: string
 }
 
-function getCache(chat_id: string, callback: (cache: any) => void) {
-  AsyncStorage.getItem('chat_cache_' + chat_id, (error, result) => {
-    if (result)
-      callback(JSON.parse(result))
-    else
-      callback(null)
-  })
-}
-
-function setCache(chat_id: string, cache: any) {
-  // AsyncStorage.setItem('chat_cache_' + chat_id, JSON.stringify(cache))
-}
-
 export interface ChatChatReturnUser {
   username: string,
   image: string,
@@ -90,24 +76,24 @@ export interface ChatChatReturn {
   hasPrevious: boolean,
   error: string,
   loading: boolean
+  fetch: boolean
 }
 
 export default function m(props: ChattingChatProps): ChatChatReturn {
-
-  const { update } = ChattingHistory()
+  const [cacheSendData] = ChattingCache_sendProperty.state().useState()
   const user = UserClass.state().useSelector((s: any) => s)
   const [chat_id, setChat_id] = useSafeState(props.chat_id)
   const { chat_to } = props
   const group_id = props?.group_id || esp.config('group_id')
   const [hasNext, setHasNext] = useSafeState(true)
-  const [data, setData] = useSafeState<any>([])
+  const [data, setData] = ChattingCache([], 'chatting_chat_message' + chat_id)
   const [error, setError] = useSafeState("")
-  const [loading, setLoading] = useSafeState(true)
-  const [isReady, setIsReady] = useSafeState(false)
+  const [loading, setLoading] = useSafeState(data?.length > 0 ? false : true)
+  const [isReady, setIsReady] = useSafeState(data?.length > 0 ? false : true)
 
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
-  UserData.register('chat_cache_' + chat_id)
+
   ChattingOpen_setter(chat_id)
 
   useEffect(() => {
@@ -145,13 +131,13 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!user || !user.hasOwnProperty("id")) return
 
     Firestore.update.doc([...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.data?.user_id]], (snap: any) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
         Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.data?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
+    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
         Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
@@ -159,40 +145,63 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     })
   }
 
+  const dataRef = useRef(data)
+  const [lastDocument, setLastDocument] = useSafeState<any>(null);
+  const [fetchingData, setFetchingData] = useSafeState(true);
+
+  function updateData(newData: any) {
+    dataRef.current = newData;
+    setData(newData);
+    setIsReady(true)
+  }
+
+  function subs(): () => void {
+    const unsub = ChattingPaginate().getFirstChatsBatch(chat_id, (querySnapshot: QuerySnapshot<DocumentData>) => {
+      const chats: any[] = [];
+      querySnapshot.docChanges().forEach(({ type, doc }) => {
+        if (type === "added") chats.push({ id: doc.id, ...doc.data() });
+      });
+      if (dataRef.current.length === 0)
+        setLastDocument(
+          querySnapshot.docChanges()[querySnapshot.docChanges().length - 1].doc
+        );
+      setFetchingData(false);
+      updateData([...chats, ...dataRef.current]);
+    });
+
+    return () => {
+      unsub();
+    };
+  }
+
   useEffect(() => {
     if (chat_id && !loading) {
-      ChattingLib().chatListenChange(chat_id, (datas) => {
-        ChattingLib().chatGetAll(chat_id, (chats, endReach) => {
-          setData(chats)
-          setIsReady(true)
-        }, 1, 20)
-      })
+      subs()
     }
   }, [chat_id, loading])
 
 
   useEffect(() => {
     if (data) {
-      update()
-      LibWorkloop.execNextTix(setCache, [chat_id, data])
+      // update()
       if (data.length > 0) {
-        data.filter((c: any) => c?.data?.read == '0' && c?.data?.user_id != user?.id).forEach((x: any) => {
+        data.filter((c: any) => c?.read == '0' && c?.user_id != user?.id).forEach((x: any) => {
           setRead(x)
         })
       }
     }
   }, [data])
 
-  function loadPrevious(lastKey: string) {
+  async function loadPrevious(lastKey: string) {
     if (isReady) {
-      LibUtils.debounce(() => {
-        ChattingLib().chatGetAll(chat_id, (chats) => {
-          if (chats) {
-            setData([...data, ...chats])
-          } else {
-          }
-        }, 0, 20)
-      }, 500)
+      if (!lastDocument) return;
+      setFetchingData(true);
+      const { chats, lastVisible } = await ChattingPaginate().chatsNextBatch(chat_id, lastDocument);
+
+      setLastDocument(lastVisible);
+      setFetchingData(false);
+      updateData([...data, ...chats]);
+
     } else {
       setHasNext(false)
     }
@@ -228,22 +237,41 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     const lchat_id = _chat_id || chat_id
 
     if (lchat_id) {
-      ChattingLib().chatSend(lchat_id, chat_to, message, attach, (msg: ChattingItem) => {
-        callback && callback(lchat_id, msg)
-        setNotif(lchat_id, msg.msg)
-      })
+      callback && callback(lchat_id, dummyMsg)
+      ChattingCache_sendProperty.insertToCache(lchat_id, chat_to, group_id, message, attach)
+      setNotif(lchat_id, message)
     } else {
-      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg: ChattingItem, chat_id: string) => {
+      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg, chat_id) => {
         callback && callback(chat_id, msg)
-        setNotif(chat_id, msg.msg)
+        setNotif(chat_id, msg)
         setChat_id(chat_id)
       })
     }
   }
 
+  const _time = (new Date().getTime() / 1000).toFixed(0)
+  let dummies = cacheSendData.filter((x: any) => x.chat_to == chat_to)?.map?.((item: any) => {
+    let dummyMsg: any = {
+      "data": {
+        "msg": item.message,
+        "read": "2",
+        "time": _time,
+        "user_id": user.id,
+      },
+      "id": _time
+    }
+    return { ...dummyMsg, ...dummyMsg.data, key: dummyMsg.id }
+  })
+
+  const dataCurrent = data?.map?.((item: any) => ({ ...item?.data, ...item, key: item?.id }))
+  const dataFromCache = dummies
+
+  const ids = new Set(dataCurrent.map((d: any) => d.message));
+  const merged = [...dataCurrent, ...dataFromCache.filter((d: any) => !ids.has(d.message))];
+
   return {
     chat_id: chat_id,
-    conversation: data.map((item: any) => ({ ...item?.data, ...item, key: item?.id })),
+    conversation: merged || [],
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,
@@ -251,6 +279,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     hasPrevious: hasNext,
     loading: loading,
     loadPrevious: loadPrevious,
-    send: send
+    send: send,
+    fetch: fetchingData
   }
 }

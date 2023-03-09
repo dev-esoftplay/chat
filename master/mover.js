@@ -98,7 +98,7 @@ const toBe = `
           Firestore()?.init?.()
           if (user){
             const ChattingLib = esp.mod('chatting/lib')
-            new ChattingLib().setUser()
+            ChattingLib().setUser()
           }
         } catch (error) {
 
