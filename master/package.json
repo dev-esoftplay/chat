@@ -1,6 +1,6 @@
 {
   "name": "esoftplay-chatting",
-  "version": "0.0.4-a",
+  "version": "0.0.4-b",
   "description": "chat module on esoftplay framework",
   "main": "index.js",
   "scripts": {
