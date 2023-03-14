@@ -34,10 +34,10 @@ export default function m(): void {
 
   useEffect(() => {
     time = setInterval(_set, 5000)
-    AppState.addEventListener("change", onAppStateChange)
+    const subs: any = AppState.addEventListener("change", onAppStateChange)
     return () => {
       if (time) clearInterval(time)
-      AppState.removeEventListener("change", onAppStateChange)
+      subs.remove()
     }
   }, [])
 }
