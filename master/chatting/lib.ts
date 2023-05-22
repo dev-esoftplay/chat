@@ -52,7 +52,7 @@ export default function m(): ChattingLibReturn {
 
     if (!user) return
     if (user?.id == chat_to) {
-      Alert.alert('Oops..!', 'Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri')
+      Alert.alert(esp.lang("chatting/lib", "alert_title"), esp.lang("chatting/lib", "alert_msg"))
       return
     }
     const chat_id = (new Date().getTime() / 1000).toFixed(0) + "-" + makeid(4)

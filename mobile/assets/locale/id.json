@@ -1,0 +1,25 @@
+{
+  "chatting/chat": {
+    "user_not_found": "Tujuan chat tidak ditemukan",
+    "no_chat_myself": "Tidak dapat mengirim pesan ke diri sendiri",
+    "user_not_valid": "Tujuan chat tidak valid",
+    "chatto_notfound": "Tujuan chat tidak ditemukan",
+    "self_send": "Tidak dapat mengirim pesan ke diri sendiri",
+    "not_valid": "Tujuan chat tidak valid"
+  },
+  "chatting/lib": {
+    "no_chat_self": "Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri",
+    "oops": "Oops..!",
+    "alert_title": "Oops..!",
+    "alert_msg": "Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri"
+  },
+  "chatting/login": {
+    "wait": "Mohon tunggu",
+    "error": "Kesalahan",
+    "progress_wait": "Mohon tunggu",
+    "alert_title": "Kesalahan"
+  },
+  "chatting/chatting": {
+    "input_label": "Pesan"
+  }
+}
