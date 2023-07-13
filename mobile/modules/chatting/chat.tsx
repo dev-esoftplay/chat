@@ -4,6 +4,7 @@
 import { esp, useSafeState } from 'esoftplay';
 import Firestore from 'esoftplay-firestore';
 import { ChattingCache } from 'esoftplay/cache/chatting/cache/import';
+import { ChattingCache_sendProperty } from 'esoftplay/cache/chatting/cache_send/import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
@@ -254,18 +255,9 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     setData(LibObject.unshift(data, dummyMsg)())
     const lchat_id = _chat_id || chat_id
 
-    if (lchat_id) {
-      ChattingLib().chatSend(lchat_id, chat_to, message, attach, (msg: ChattingItem) => {
-        callback && callback(lchat_id, msg)
-        setNotif(lchat_id, msg.msg)
-      })
-    } else {
-      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg: ChattingItem, chat_id: string) => {
-        callback && callback(chat_id, msg)
-        setNotif(chat_id, msg.msg)
-        setChat_id(chat_id)
-      })
-    }
+    ChattingCache_sendProperty.insertToCache(lchat_id, chat_to, group_id, message, attach, false)
+    setNotif(lchat_id, message)
+    callback && callback(lchat_id, dummyMsg)
   }
 
   function sendNoCache(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void, _chat_id?: string) {
