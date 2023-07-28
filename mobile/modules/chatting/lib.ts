@@ -79,16 +79,17 @@ export default function m(): ChattingLibReturn {
       draf: ''
     }
 
-    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
-      msg['key'] = dt?.id
-    })
     /* me */
     Firestore.add.collection([...pathChat, chat_id, 'member'], memberMe, () => { })
     /* notMe */
     Firestore.add.collection([...pathChat, chat_id, 'member'], memberNotMe, () => { })
 
-    if (callback) callback(msg, chat_id)
-    if (withHistory) historyNew(chat_id, chat_to, message)
+    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
+      msg['key'] = dt?.id
+      if (callback) callback(msg, chat_id)
+      if (withHistory) historyNew(chat_id, chat_to, message)
+    })
+
   }
   function historyNew(chat_id: string, chat_to: string, last_message: string): void {
     const user = UserClass?.state?.()?.get?.()
