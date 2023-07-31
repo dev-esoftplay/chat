@@ -52,7 +52,7 @@ export default function m(): ChattingLibReturn {
 
     if (!user) return
     if (user?.id == chat_to) {
-      Alert.alert('Oops..!', 'Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri')
+      Alert.alert(esp.lang("chatting/lib", "alert_title"), esp.lang("chatting/lib", "alert_msg"))
       return
     }
     const chat_id = (new Date().getTime() / 1000).toFixed(0) + "-" + makeid(4)
@@ -79,16 +79,17 @@ export default function m(): ChattingLibReturn {
       draf: ''
     }
 
-    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
-      msg['key'] = dt?.id
-    })
     /* me */
     Firestore.add.collection([...pathChat, chat_id, 'member'], memberMe, () => { })
     /* notMe */
     Firestore.add.collection([...pathChat, chat_id, 'member'], memberNotMe, () => { })
 
-    if (callback) callback(msg, chat_id)
-    if (withHistory) historyNew(chat_id, chat_to, message)
+    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
+      msg['key'] = dt?.id
+      if (callback) callback(msg, chat_id)
+      if (withHistory) historyNew(chat_id, chat_to, message)
+    })
+
   }
   function historyNew(chat_id: string, chat_to: string, last_message: string): void {
     const user = UserClass?.state?.()?.get?.()

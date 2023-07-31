@@ -9,14 +9,15 @@ import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { ChattingOnline_listener } from 'esoftplay/cache/chatting/online_listener/import';
 import { ChattingOpen_listener } from 'esoftplay/cache/chatting/open_listener/import';
 import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import';
-import { ChattingPaginate } from 'esoftplay/cache/chatting/paginate/import';
 import { LibCurl } from 'esoftplay/cache/lib/curl/import';
 import { LibObject } from 'esoftplay/cache/lib/object/import';
+import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
+import useGlobalState from 'esoftplay/global';
 
 import moment from 'esoftplay/moment';
-import { DocumentData, QuerySnapshot } from 'firebase/firestore';
-import { useEffect, useRef } from 'react';
+import { collection, DocumentData, getDocs, limit, onSnapshot, orderBy, query, QuerySnapshot, startAfter } from 'firebase/firestore';
+import { useEffect } from 'react';
 moment().locale('id')
 
 export interface ChattingItem {
@@ -68,6 +69,7 @@ export interface ChatChatReturnUser {
 export interface ChatChatReturn {
   chat_id: string,
   send: (message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void, _chat_id?: string) => void,
+  sendNoCache: (message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void, _chat_id?: string) => void,
   chat_to_user: ChatChatReturnUser,
   chat_to_online: string,
   loadPrevious: (firstKey: string) => void,
@@ -76,20 +78,27 @@ export interface ChatChatReturn {
   hasPrevious: boolean,
   error: string,
   loading: boolean
-  fetch: boolean
 }
 
+const PAGE_SIZE = 10;
+const lastVisible = useGlobalState<any>(null)
+
 export default function m(props: ChattingChatProps): ChatChatReturn {
-  const [cacheSendData] = ChattingCache_sendProperty.state().useState()
+  const path = ChattingLib().pathChat
   const user = UserClass.state().useSelector((s: any) => s)
   const [chat_id, setChat_id] = useSafeState(props.chat_id)
   const { chat_to } = props
   const group_id = props?.group_id || esp.config('group_id')
   const [hasNext, setHasNext] = useSafeState(true)
-  const [data, setData] = ChattingCache([], 'chatting_chat_message' + chat_id)
-  const [error, setError] = useSafeState("")
+  // const [data, setData] = useSafeState<any>([])
+
+  const [data, setData] = ChattingCache([], 'chatting_chat_message0' + chat_id)
   const [loading, setLoading] = useSafeState(data?.length > 0 ? false : true)
   const [isReady, setIsReady] = useSafeState(data?.length > 0 ? false : true)
+
+  const [error, setError] = useSafeState("")
+  // const [loading, setLoading] = useSafeState(true)
+  // const [isReady, setIsReady] = useSafeState(false)
 
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
@@ -100,11 +109,11 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     let exec = setTimeout(async () => {
       let error = ''
       if (chat_to == undefined || chat_to == '') {
-        error = "Tujuan chat tidak ditemukan"
+        error = esp.lang("chatting/chat", "chatto_notfound")
       } else if (chat_to == user?.id) {
-        error = "Tidak dapat mengirim pesan ke diri sendiri"
+        error = esp.lang("chatting/chat", "self_send")
       } else if (group_id == undefined || group_id == "") {
-        error = "Tujuan chat tidak valid"
+        error = esp.lang("chatting/chat", "not_valid")
       }
       if (error != '') {
         setError(error)
@@ -123,6 +132,24 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     return () => clearTimeout(exec)
   }, [])
 
+  useEffect(() => {
+    if (chat_id && !loading) {
+      listenFirstPage()
+    }
+    if (!chat_id) {
+      setData([])
+    }
+  }, [chat_id, loading])
+
+  useEffect(() => {
+    if (data) {
+      if (data.length > 0) {
+        data.filter((c: any) => c?.read == '0' && c?.user_id != user?.id).forEach((x: any) => {
+          setRead(x)
+        })
+      }
+    }
+  }, [data])
 
   function setRead(chat: any) {
     const path = ChattingLib().pathChat
@@ -145,63 +172,55 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     })
   }
 
-  const dataRef = useRef(data)
-  const [lastDocument, setLastDocument] = useSafeState<any>(null);
-  const [fetchingData, setFetchingData] = useSafeState(true);
-
-  function updateData(newData: any) {
-    dataRef.current = newData;
-    setData(newData);
-    setIsReady(true)
-  }
-
-  function subs(): () => void {
-    const unsub = ChattingPaginate().getFirstChatsBatch(chat_id, (querySnapshot: QuerySnapshot<DocumentData>) => {
-      const chats: any[] = [];
-      querySnapshot.docChanges().forEach(({ type, doc }) => {
-        if (type === "added") chats.push({ id: doc.id, ...doc.data() });
-      });
-      if (dataRef.current.length === 0)
-        setLastDocument(
-          querySnapshot.docChanges()[querySnapshot.docChanges().length - 1].doc
-        );
-      setFetchingData(false);
-      updateData([...chats, ...dataRef.current]);
-    });
-
-    return () => {
-      unsub();
-    };
-  }
-
-  useEffect(() => {
-    if (chat_id && !loading) {
-      subs()
+  function listenFirstPage(): () => void {
+    if (!chat_id) {
+      return () => { }
     }
-  }, [chat_id, loading])
+    const colRef = collection(Firestore.db(), ...path, chat_id, 'conversation')
+    const fRef = query(colRef, orderBy("time", 'desc'), limit(PAGE_SIZE))
 
+    let datas: any[] = []
+    const unsub = onSnapshot(fRef, (snap: QuerySnapshot<DocumentData>) => {
+      lastVisible.set(snap.docs[snap.docs.length - 1])
+      setIsReady(true)
+      datas = []
+      snap.docs.forEach((doc) => {
+        datas.push({ ...doc.data(), id: doc.id, key: doc.id })
+      })
+      setData(datas)
+    }, (e) => {
+      console.warn("ERROR : ", e);
+    })
+    return () => unsub()
+  }
 
-  useEffect(() => {
-    if (data) {
-      // update()
-      if (data.length > 0) {
-        data.filter((c: any) => c?.read == '0' && c?.user_id != user?.id).forEach((x: any) => {
-          setRead(x)
+  function nextPage() {
+    if (!chat_id) {
+      return
+    }
+    const colRef = collection(Firestore.db(), ...path, chat_id, 'conversation')
+    const fRef = query(colRef, orderBy("time", 'desc'), startAfter(lastVisible.get()), limit(PAGE_SIZE))
+
+    let datas: any[] = []
+    getDocs(fRef).then((snap) => {
+      if (!snap.empty) {
+        snap.docs.forEach((doc) => {
+          datas.push({ ...doc.data(), id: doc.id, key: doc.id })
         })
+        setData(LibObject.push(data, ...datas)())
+        lastVisible.set(snap.docs[snap.docs.length - 1])
       }
-    }
-  }, [data])
+    }).catch((e) => {
+      console.warn('ERROR NEXT: ', e);
+    })
 
-  async function loadPrevious(lastKey: string) {
-    if (isReady) {
-      if (!lastDocument) return;
-      setFetchingData(true);
-      const { chats, lastVisible } = await ChattingPaginate().chatsNextBatch(chat_id, lastDocument);
+  }
 
-      setLastDocument(lastVisible);
-      setFetchingData(false);
-      updateData([...data, ...chats]);
-
+  function loadPrevious(lastKey: string) {
+    if (isReady && lastVisible.get()) {
+      LibUtils.debounce(() => {
+        nextPage()
+      }, 500)
     } else {
       setHasNext(false)
     }
@@ -236,10 +255,33 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     setData(LibObject.unshift(data, dummyMsg)())
     const lchat_id = _chat_id || chat_id
 
+    ChattingCache_sendProperty.insertToCache(lchat_id, chat_to, group_id, message, attach, false)
+    setNotif(lchat_id, message)
+    callback && callback(lchat_id, dummyMsg)
+  }
+
+  function sendNoCache(message: string, attach?: ChattingItemAttach, callback?: (chat_id: string, message: ChattingItem) => void, _chat_id?: string) {
+    const _time = (new Date().getTime() / 1000).toFixed(0)
+    let dummyMsg: any = {
+      "data": {
+        "msg": message,
+        "read": "2",
+        "time": _time,
+        "user_id": user.id,
+      },
+      "id": _time,
+    }
+    if (attach) {
+      dummyMsg.data["attach"] = attach
+    }
+    setData(LibObject.unshift(data, dummyMsg)())
+    const lchat_id = _chat_id || chat_id
+
     if (lchat_id) {
-      callback && callback(lchat_id, dummyMsg)
-      ChattingCache_sendProperty.insertToCache(lchat_id, chat_to, group_id, message, attach)
-      setNotif(lchat_id, message)
+      ChattingLib().chatSend(lchat_id, chat_to, message, attach, (msg: ChattingItem) => {
+        callback && callback(lchat_id, msg)
+        setNotif(lchat_id, msg.msg)
+      })
     } else {
       ChattingLib().chatSendNew(chat_to, message, attach, true, (msg, chat_id) => {
         callback && callback(chat_id, msg)
@@ -249,29 +291,9 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     }
   }
 
-  const _time = (new Date().getTime() / 1000).toFixed(0)
-  let dummies = cacheSendData.filter((x: any) => x.chat_to == chat_to)?.map?.((item: any) => {
-    let dummyMsg: any = {
-      "data": {
-        "msg": item.message,
-        "read": "2",
-        "time": _time,
-        "user_id": user.id,
-      },
-      "id": _time
-    }
-    return { ...dummyMsg, ...dummyMsg.data, key: dummyMsg.id }
-  })
-
-  const dataCurrent = data?.map?.((item: any) => ({ ...item?.data, ...item, key: item?.id }))
-  const dataFromCache = dummies
-
-  const ids = new Set(dataCurrent.map((d: any) => d.message));
-  const merged = [...dataCurrent, ...dataFromCache.filter((d: any) => !ids.has(d.message))];
-
   return {
     chat_id: chat_id,
-    conversation: merged || [],
+    conversation: data.map((item: any) => ({ ...item?.data, ...item, key: item?.id })),
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,
@@ -280,6 +302,6 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     loading: loading,
     loadPrevious: loadPrevious,
     send: send,
-    fetch: fetchingData
+    sendNoCache: sendNoCache
   }
 }

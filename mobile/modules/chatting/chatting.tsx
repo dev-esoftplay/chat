@@ -5,6 +5,7 @@ import { LibList } from 'esoftplay/cache/lib/list/import';
 import { LibLoading } from 'esoftplay/cache/lib/loading/import';
 import { LibTextstyle } from 'esoftplay/cache/lib/textstyle/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
+import esp from 'esoftplay/esp';
 import React, { useRef } from 'react';
 import { View } from 'react-native';
 
@@ -51,7 +52,7 @@ export default function m(props: ChattingChattingProps): any {
             />
       }
       <LibInput
-        label="Pesan"
+        label={esp.lang("chatting/chatting", "input_label")}
         ref={inputMsg}
         onSubmitEditing={() => send(inputMsg.current!.getText(), undefined, (chat_id, message) => {
           // esp.log(chat_id, message);

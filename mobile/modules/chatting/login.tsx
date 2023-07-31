@@ -17,7 +17,7 @@ export interface ChatLoginProps {
 export default function m(props: ChatLoginProps): any {
 
   useEffect(() => {
-    LibProgress.show('Mohon tunggu')
+    LibProgress.show(esp.lang("chatting/login", "progress_wait"))
     new LibCurl('user_login', {
       username: new LibCrypt().encode('admin'),
       password: new LibCrypt().encode('123456'),
@@ -31,7 +31,7 @@ export default function m(props: ChatLoginProps): any {
       },
       (msg) => {
         LibProgress.hide()
-        Alert.alert('Kesalahan', msg)
+        Alert.alert(esp.lang("chatting/login", "alert_title"), msg)
       }, 1)
   }, [])
 

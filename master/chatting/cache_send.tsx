@@ -1,4 +1,5 @@
 // withHooks
+// noPage
 
 import { useGlobalReturn, useGlobalState } from "esoftplay"
 import { ChattingItem } from "esoftplay/cache/chatting/chat/import"
@@ -16,7 +17,8 @@ export interface ChattingCache_sendProps {
 
 let allowProcessMsg = useGlobalState<boolean>(true)
 const stateMsg = useGlobalState<any[]>([], {
-  persistKey: 'chatting_cache_chat0', inFile: true, isUserData: true, listener(data) {
+  loadOnInit: true,
+  persistKey: 'chatting_cache_chat1', inFile: true, isUserData: true, listener(data) {
     syncFromCacheNew()
   },
 })
@@ -51,17 +53,19 @@ export function syncFromCacheNew() {
     const arr = stateMsg.get()
     let currentChat = arr?.[idx]
     let nextChat = arr?.[idx + 1]
+
     if (currentChat) {
       chat_id = chat_id ? chat_id : currentChat.chat_id
       if (chat_id) {
         currentChat = { ...currentChat, chat_id: chat_id }
       }
       sendCacheToServer(currentChat, (msg, chat_id) => {
-        if (nextChat)
-          execSend(idx + 1, chat_id)
-        else {
-          stateMsg.reset()
+        if (nextChat) {
+          stateMsg.set(LibObject.splice(stateMsg.get(), 0, 1)())
+          execSend(idx)
+        } else {
           allowProcessMsg.set(true)
+          stateMsg.set(LibObject.splice(stateMsg.get(), 0, 1)())
         }
       }, () => { });
     } else {
