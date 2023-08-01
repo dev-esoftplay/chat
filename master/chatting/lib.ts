@@ -5,7 +5,7 @@ import { esp } from "esoftplay"
 import Firestore, { DataId, updateValue } from "esoftplay-firestore"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
-import { serverTimestamp } from "firebase/firestore"
+import { doc, serverTimestamp, writeBatch } from "firebase/firestore"
 import { Alert } from "react-native"
 
 
@@ -116,8 +116,22 @@ export default function m(): ChattingLibReturn {
       group_id,
       user_id: chat_to
     }
-    Firestore.add.collection([...pathHistory], me, () => { })
-    Firestore.add.collection([...pathHistory], notMe, () => { })
+
+    let historyMe: any = {}
+    const historyNotMe = {
+      chat_to_username: user?.name,
+      chat_to_image: user?.image
+    }
+
+    Firestore.get.collectionWhere([...pathUsers], [["user_id", "==", chat_to]], (arr) => {
+      if (arr.length > 0) {
+        historyMe["chat_to_username"] = arr?.[0]?.data?.username
+        historyMe["chat_to_image"] = arr?.[0]?.data?.image
+      }
+      Firestore.add.collection([...pathHistory], { ...me, ...historyMe }, () => { })
+      Firestore.add.collection([...pathHistory], { ...notMe, ...historyNotMe }, () => { })
+    })
+
   }
   function chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
 
@@ -166,17 +180,16 @@ export default function m(): ChattingLibReturn {
     })
 
     if (!chat_id) return
-    Firestore.get.collectionIds([...pathHistory], [['chat_id', '==', chat_id]], (data) => {
-      data.forEach((x) => {
-        Firestore.update.doc([...pathHistory, x], [
-          { key: "time", value: _time },
-          { key: "last_message", value: message },
-          { key: "read", value: "0" },
-          { key: "sender_id", value: user?.id },
-        ], () => { })
-      })
+    Firestore.get.collectionIds([...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
+      updateBatch(keys, pathHistory, [
+        { key: "time", value: _time },
+        { key: "last_message", value: message },
+        { key: "read", value: "0" },
+        { key: "sender_id", value: user?.id },
+      ])
     })
   }
+
   function chatAll(chat_id: string, callback: (messages: any[]) => void, lastIndex?: string): void {
     const user = UserClass?.state?.()?.get?.()
 
@@ -252,16 +265,66 @@ export default function m(): ChattingLibReturn {
       }
     })
   }
+
+  async function deleteDuplicatedUser(key: any[]) {
+    const batch = writeBatch(Firestore.db());
+    key.forEach((id, index) => {
+      if (index !== 0) {
+        const laRef = doc(Firestore.db(), ...pathUsers, id);
+        batch.delete(laRef);
+      }
+    })
+    await batch.commit();
+  }
+
+  async function updateBatch(key: any[], rootPath: string[], data: any[]) {
+    if (key.length > 0) {
+      const batch = writeBatch(Firestore.db());
+      const value = data.map((x) => {
+        return { [x.key]: x.value }
+      })
+      const newValue = Object.assign({}, ...value)
+
+      key.forEach((id) => {
+        const laRef = doc(Firestore.db(), ...rootPath, id);
+        batch.update(laRef, newValue);
+      })
+      await batch.commit()
+    }
+  }
+
   function setUser(username?: string, image?: string, deleted?: boolean): void {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.get.collectionIds([...pathUsers], [["user_id", "==", user?.id]], (arr) => {
-      if (arr.length == 0) {
+    Firestore.get.collectionWhere([...pathUsers], [["user_id", "==", user?.id]], (data) => {
+      if (data?.length > 0) {
+        // update username & image user
+        Firestore.update.doc([...pathUsers, data?.[0]?.id], [
+          { key: "username", value: LibUtils.ucwords(username || user?.name) },
+          { key: "image", value: image || user?.image },
+        ], () => {
+          if (data?.length > 1) {
+            const keys = data.map((t) => t.id)
+            deleteDuplicatedUser(keys)
+          }
+        })
+
+        if (data?.[0]?.data?.username != user?.name || data?.[0]?.data?.image != user?.image) {
+          //update username & image history
+          Firestore.get.collectionIds([...pathHistory], [["chat_to", "==", user?.id]], (keys) => {
+            updateBatch(keys, pathHistory, [
+              { key: "chat_to_username", value: LibUtils.ucwords(username || user?.name) },
+              { key: "chat_to_image", value: image || user?.image },
+            ])
+          })
+        }
+      } else {
+        //insert to user
         Firestore.add.collection([...pathUsers], {
           user_id: user?.id,
-          username: LibUtils.ucwords(username || user.name),
-          image: image || user.image,
+          username: LibUtils.ucwords(username || user?.name),
+          image: image || user?.image,
           deleted: deleted ? '1' : '0'
         }, () => { })
       }

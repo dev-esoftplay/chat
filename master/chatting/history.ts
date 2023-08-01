@@ -34,7 +34,7 @@ export default function m(): ChatHistoryReturn {
     const setvalue = () => {
       count++
       if (hist.length == count) {
-        setData(histories)
+        setData(histories.sort((a, b) => b.time - a.time))
       }
     }
 
@@ -50,14 +50,22 @@ export default function m(): ChatHistoryReturn {
         item['time'] = _snapshoot?.time
         item['read'] = _snapshoot.read
 
-        Firestore.get.collectionWhere([...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
-          if (snap) {
-            histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
-            setvalue()
-          } else {
-            setvalue()
-          }
-        })
+        if (_snapshoot?.chat_to_username && _snapshoot.chat_to_image) {
+          item['image'] = _snapshoot.chat_to_image
+          item['username'] = _snapshoot.chat_to_username
+          histories.push({ ..._snapshoot, ...item })
+          setvalue()
+        } else {
+          Firestore.get.collectionWhere([...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
+            if (snap) {
+              histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
+              setvalue()
+            } else {
+              setvalue()
+            }
+          })
+        }
+
 
       })
   }
@@ -65,7 +73,7 @@ export default function m(): ChatHistoryReturn {
   function _get() {
     if (!user || !user.hasOwnProperty("id") || !group_id) return
     const pathHistory = ChattingLib().pathHistory
-    Firestore.listen.collection([...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
+    Firestore.get.collectionWhereOrderBy([...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
       update(snapshoot)
     })
   }
