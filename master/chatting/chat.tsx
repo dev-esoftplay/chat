@@ -260,9 +260,9 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
       setNotif(lchat_id, message)
       callback && callback(lchat_id, dummyMsg)
     } else {
-      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg, chat_id) => {
+      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg: ChattingItem, chat_id) => {
         callback && callback(chat_id, msg)
-        setNotif(chat_id, msg)
+        setNotif(chat_id, msg?.msg)
         setChat_id(chat_id)
       })
     }
@@ -288,12 +288,12 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (lchat_id) {
       ChattingLib().chatSend(lchat_id, chat_to, message, attach, (msg: ChattingItem) => {
         callback && callback(lchat_id, msg)
-        setNotif(lchat_id, msg.msg)
+        setNotif(lchat_id, msg?.msg)
       })
     } else {
-      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg, chat_id) => {
+      ChattingLib().chatSendNew(chat_to, message, attach, true, (msg: ChattingItem, chat_id) => {
         callback && callback(chat_id, msg)
-        setNotif(chat_id, msg)
+        setNotif(chat_id, msg?.msg)
         setChat_id(chat_id)
       })
     }
