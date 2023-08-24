@@ -92,18 +92,18 @@ if (fs.existsSync("./libs.json")) {
 /* inject user Index */
 const be = `//esoftplay-chatting`
 const toBe = `
-      if (esp.config('firebase').hasOwnProperty('apiKey')) {
-        try {
-          const Firestore = esp.mod('chatting/firestore')
-          Firestore()?.init?.()
-          if (user){
-            const ChattingLib = esp.mod('chatting/lib')
-            ChattingLib().setUser()
-          }
-        } catch (error) {
+  useEffect(() => {
+    if (user && esp.config('firebase').hasOwnProperty('apiKey')) {
+      try {
+        const Firestore = esp.mod('chatting/firestore')
+        Firestore()?.init?.()
+        const ChattingLib = esp.mod('chatting/lib')
+        ChattingLib().setUser()
+      } catch (error) {
 
-        }
       }
+    }
+  }, [user])
 `
 if (fs.existsSync('../esoftplay/modules/user/index.tsx')) {
   let userIndexString = fs.readFileSync('../esoftplay/modules/user/index.tsx', { encoding: 'utf-8' })
