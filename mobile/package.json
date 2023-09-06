@@ -20,7 +20,7 @@
     "buffer": "^6.0.3",
     "dayjs": "^1.10.6",
     "esoftplay": "0.0.122-n",
-    "esoftplay-firestore": "^0.0.1-a",
+    "esoftplay-firestore": "0.0.1-w",
     "expo": "^45.0.0",
     "expo-av": "~10.1.2",
     "expo-blur": "~10.0.3",

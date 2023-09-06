@@ -2,7 +2,7 @@
 // useLibs
 // noPage
 import { esp, useSafeState } from 'esoftplay';
-import Firestore from 'esoftplay-firestore';
+import useFirestore from 'esoftplay-firestore';
 import { ChattingCache } from 'esoftplay/cache/chatting/cache/import';
 import { ChattingCache_sendProperty } from 'esoftplay/cache/chatting/cache_send/import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
@@ -103,6 +103,8 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
 
+  const { db } = useFirestore().init()
+
   ChattingOpen_setter(chat_id)
 
   useEffect(() => {
@@ -157,17 +159,17 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
     if (!user || !user.hasOwnProperty("id")) return
 
-    Firestore.update.doc([...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
+    useFirestore().updateDocument(db, [...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
+    useFirestore().getCollectionIds(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        useFirestore().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
+    useFirestore().getCollectionIds(db, [...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        useFirestore().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
   }
@@ -176,7 +178,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return () => { }
     }
-    const colRef = collection(Firestore.db(), ...path, chat_id, 'conversation')
+    const colRef = collection(db, ...path, chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), limit(PAGE_SIZE))
 
     let datas: any[] = []
@@ -198,7 +200,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return
     }
-    const colRef = collection(Firestore.db(), ...path, chat_id, 'conversation')
+    const colRef = collection(db, ...path, chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), startAfter(lastVisible.get()), limit(PAGE_SIZE))
 
     let datas: any[] = []

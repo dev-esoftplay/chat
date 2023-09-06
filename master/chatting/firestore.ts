@@ -1,15 +1,15 @@
 // useLibs
 // noPage
 
-import Firestore from "esoftplay-firestore"
+import useFirestore from "esoftplay-firestore"
 
 export interface ChattingFirestoreReturn {
-  init: () => void
+  init: (appName?: string, config?: any) => void
 }
 
 export default function m(): ChattingFirestoreReturn {
-  const init = () => {
-    Firestore?.init?.()
+  const init = (appName?: string, config?: string) => {
+    useFirestore().init?.(appName, config)
   }
 
   return {

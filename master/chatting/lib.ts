@@ -2,7 +2,7 @@
 // noPage
 
 import { esp } from "esoftplay"
-import Firestore, { DataId, updateValue } from "esoftplay-firestore"
+import useFirestore, { DataId, updateValue } from "esoftplay-firestore"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
 import { doc, serverTimestamp, writeBatch } from "firebase/firestore"
@@ -35,6 +35,8 @@ export default function m(): ChattingLibReturn {
   const pathChat = [rootPath, 'chat', 'chat']
   const pathHistory = [rootPath, 'chat', 'history']
   const pathUsers = [rootPath, 'chat', 'users']
+
+  const { db } = useFirestore().init()
 
   function makeid(length: number) {
     var result = '';
@@ -80,11 +82,11 @@ export default function m(): ChattingLibReturn {
     }
 
     /* me */
-    Firestore.add.collection([...pathChat, chat_id, 'member'], memberMe, () => { })
+    useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberMe, () => { })
     /* notMe */
-    Firestore.add.collection([...pathChat, chat_id, 'member'], memberNotMe, () => { })
+    useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberNotMe, () => { })
 
-    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
+    useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
       msg['key'] = dt?.id
       if (callback) callback(msg, chat_id)
       if (withHistory) historyNew(chat_id, chat_to, message)
@@ -123,13 +125,13 @@ export default function m(): ChattingLibReturn {
       chat_to_image: user?.image
     }
 
-    Firestore.get.collectionWhere([...pathUsers], [["user_id", "==", chat_to]], (arr) => {
+    useFirestore().getCollectionWhere(db, [...pathUsers], [["user_id", "==", chat_to]], (arr) => {
       if (arr.length > 0) {
         historyMe["chat_to_username"] = arr?.[0]?.data?.username
         historyMe["chat_to_image"] = arr?.[0]?.data?.image
       }
-      Firestore.add.collection([...pathHistory], { ...me, ...historyMe }, () => { })
-      Firestore.add.collection([...pathHistory], { ...notMe, ...historyNotMe }, () => { })
+      useFirestore().addCollection(db, [...pathHistory], { ...me, ...historyMe }, () => { })
+      useFirestore().addCollection(db, [...pathHistory], { ...notMe, ...historyNotMe }, () => { })
     })
 
   }
@@ -162,7 +164,7 @@ export default function m(): ChattingLibReturn {
       user_id: chat_to
     }
     /* simpan pesan */
-    Firestore.add.collection([...pathChat, chat_id, 'conversation'], msg, (dt) => {
+    useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
       msg['key'] = dt?.id
       if (callback) {
         callback(msg)
@@ -170,17 +172,17 @@ export default function m(): ChattingLibReturn {
     })
 
     /* set members */
-    Firestore.get.collectionIds([...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
-      Firestore.add.doc([...pathChat, chat_id, 'member', arr[0]], member, () => { })
+    useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
+      useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], member, () => { })
     })
 
     if (!chat_to) return
-    Firestore.get.collectionIds([...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
-      Firestore.add.doc([...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
+    useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
+      useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
     })
 
     if (!chat_id) return
-    Firestore.get.collectionIds([...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
+    useFirestore().getCollectionIds(db, [...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
       updateBatch(keys, pathHistory, [
         { key: "time", value: _time },
         { key: "last_message", value: message },
@@ -194,7 +196,7 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.get.collectionWhereOrderBy([...pathChat, chat_id, 'conversation'], [], [], (arr) => {
+    useFirestore().getCollectionWhereOrderBy(db, [...pathChat, chat_id, 'conversation'], [], [], (arr) => {
       if (arr) {
         const snapshoot: any = arr;
         let a: any = {}
@@ -214,7 +216,7 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.get.doc([...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
+    useFirestore().getDocument(db, [...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
       if (dt) {
         callback({ key: dt.id, ...dt.data });
       } else {
@@ -226,12 +228,12 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.delete.doc([...pathChat, chat_id, 'conversation', key], () => { })
+    useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => { })
   }
   function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, isStartPage?: number, limit?: number): void {
     const user = UserClass?.state?.()?.get?.()
     if (!user) return
-    Firestore.paginate(isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], limit || perPage, (dt, endR) => {
+    useFirestore().paginate(db, isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], limit || perPage, (dt, endR) => {
       if (dt) {
         callback(dt, endR);
       } else {
@@ -243,7 +245,7 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.listen.collection([...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
+    useFirestore().listenCollection(db, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
       callback(dt);
     })
   }
@@ -251,13 +253,13 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
     if (!key) return
     if (!user) return
-    Firestore.update.doc([...pathChat, chat_id, 'conversation', key], value, () => { })
+    useFirestore().updateDocument(db, [...pathChat, chat_id, 'conversation', key], value, () => { })
   }
   function listenUser(user_id: string, callback: (user: any) => void) {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.listen.doc([...pathUsers, user_id], (dt) => {
+    useFirestore().listenDocument(db, [...pathUsers, user_id], (dt) => {
       if (dt) {
         callback(dt)
       } else {
@@ -267,10 +269,10 @@ export default function m(): ChattingLibReturn {
   }
 
   async function deleteDuplicatedUser(key: any[]) {
-    const batch = writeBatch(Firestore.db());
+    const batch = writeBatch(db);
     key.forEach((id, index) => {
       if (index !== 0) {
-        const laRef = doc(Firestore.db(), ...pathUsers, id);
+        const laRef = doc(db, ...pathUsers, id);
         batch.delete(laRef);
       }
     })
@@ -279,14 +281,14 @@ export default function m(): ChattingLibReturn {
 
   async function updateBatch(key: any[], rootPath: string[], data: any[]) {
     if (key.length > 0) {
-      const batch = writeBatch(Firestore.db());
+      const batch = writeBatch(db);
       const value = data.map((x) => {
         return { [x.key]: x.value }
       })
       const newValue = Object.assign({}, ...value)
 
       key.forEach((id) => {
-        const laRef = doc(Firestore.db(), ...rootPath, id);
+        const laRef = doc(db, ...rootPath, id);
         batch.update(laRef, newValue);
       })
       await batch.commit()
@@ -297,10 +299,10 @@ export default function m(): ChattingLibReturn {
     const user = UserClass?.state?.()?.get?.()
 
     if (!user) return
-    Firestore.get.collectionWhere([...pathUsers], [["user_id", "==", user?.id]], (data) => {
+    useFirestore().getCollectionWhere(db, [...pathUsers], [["user_id", "==", user?.id]], (data) => {
       if (data?.length > 0) {
         // update username & image user
-        Firestore.update.doc([...pathUsers, data?.[0]?.id], [
+        useFirestore().updateDocument(db, [...pathUsers, data?.[0]?.id], [
           { key: "username", value: LibUtils.ucwords(username || user?.name) },
           { key: "image", value: image || user?.image },
         ], () => {
@@ -312,7 +314,7 @@ export default function m(): ChattingLibReturn {
 
         if (data?.[0]?.data?.username != user?.name || data?.[0]?.data?.image != user?.image) {
           //update username & image history
-          Firestore.get.collectionIds([...pathHistory], [["chat_to", "==", user?.id]], (keys) => {
+          useFirestore().getCollectionIds(db, [...pathHistory], [["chat_to", "==", user?.id]], (keys) => {
             updateBatch(keys, pathHistory, [
               { key: "chat_to_username", value: LibUtils.ucwords(username || user?.name) },
               { key: "chat_to_image", value: image || user?.image },
@@ -321,7 +323,7 @@ export default function m(): ChattingLibReturn {
         }
       } else {
         //insert to user
-        Firestore.add.collection([...pathUsers], {
+        useFirestore().addCollection(db, [...pathUsers], {
           user_id: user?.id,
           username: LibUtils.ucwords(username || user?.name),
           image: image || user?.image,
@@ -339,7 +341,7 @@ export default function m(): ChattingLibReturn {
       if (!opposite_id) return
       if (!group_id) return
       chattochecks.push(id + '+' + opposite_id)
-      Firestore.get.collectionWhere([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
+      useFirestore().getCollectionWhere(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
         if (dt) {
           let s: any[] = dt
           if (s.length > 0) {

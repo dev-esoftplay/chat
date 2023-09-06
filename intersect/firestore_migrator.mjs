@@ -256,7 +256,27 @@ function importUser() {
   }
   loop(0);
 }
+function insertNotif() {
+  const notif = require("./notif.json")
+  const data = notif.records.slice(0, 10)
 
+  function loop(index) {
+    if (index != data.length) {
+      const newIdx = index + 1
+      Firestore.add.collection(['BBT', 'notification', 'list'], data[index], () => {
+        console.log("[done] : " + data[index]?.created);
+        setTimeout(() => {
+          loop(newIdx)
+        }, 1);
+      })
+    } else {
+      console.log("[DONE INSERT ALL]");
+      process.exit()
+    }
+  }
+  loop(0);
+}
+insertNotif()
 // importChatConversation()
 // importChatMember()
 // importHistory()
