@@ -1,8 +1,8 @@
 // useLibs
 // noPage
-import { useSafeState } from 'esoftplay';
 import useFirestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import useSafeState from 'esoftplay/state';
 import { useEffect } from 'react';
 
 export default function m(chat_id: string, chat_to: string): [number] {

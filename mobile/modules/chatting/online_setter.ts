@@ -8,17 +8,18 @@ import { AppState } from 'react-native';
 
 export default function m(): void {
   const user = UserClass?.state?.()?.useSelector?.((s: any) => s)
-  const { db } = useFirestore().init()
   let time: any = undefined
 
   function _set() {
     if (user && user.hasOwnProperty("id")) {
+      const { db } = useFirestore().init()
       const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
 
-      useFirestore().getCollectionIds(db, [...path], [["user_id", '==', user?.id]], (id: any) => {
-        if (id.length > 0) {
-          useFirestore().updateDocument(db, [...path, id?.[0]], [{ key: "online", value: timestamp }], () => { })
+      // adding orderby to get only document with uid field
+      useFirestore().getCollectionWhereOrderBy(db, [...path], [["user_id", '==', user?.id]], [["uid", "desc"]], (dta: any) => {
+        if (dta.length > 0) {
+          useFirestore().updateDocument(db, [...path, dta[0].id], [{ key: "online", value: timestamp }], () => { })
         }
       })
     }

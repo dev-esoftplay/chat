@@ -8,11 +8,11 @@ import { AppState } from 'react-native';
 
 export default function m(chat_id: string): void {
   const user = UserClass.state().useSelector((s: any) => s)
-  const { db } = useFirestore().init()
   let time: any = undefined
 
   function _set() {
     if (chat_id && user) {
+      const { db } = useFirestore().init()
       const path = ChattingLib().pathChat
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
 

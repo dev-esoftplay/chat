@@ -12,8 +12,10 @@ import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import
 import { LibCurl } from 'esoftplay/cache/lib/curl/import';
 import { LibObject } from 'esoftplay/cache/lib/object/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
+import { UseTasks } from 'esoftplay/cache/use/tasks/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
+import isEqual from 'react-fast-compare';
 
 import moment from 'esoftplay/moment';
 import { collection, DocumentData, getDocs, limit, onSnapshot, orderBy, query, QuerySnapshot, startAfter } from 'firebase/firestore';
@@ -83,6 +85,8 @@ export interface ChatChatReturn {
 const PAGE_SIZE = 10;
 const lastVisible = useGlobalState<any>(null)
 
+const useTasks = UseTasks()
+
 export default function m(props: ChattingChatProps): ChatChatReturn {
   const path = ChattingLib().pathChat
   const user = UserClass.state().useSelector((s: any) => s)
@@ -102,6 +106,13 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
+
+  const [sync] = useTasks((item: any) => new Promise((next) => {
+    ChattingCache_sendProperty.sendCacheToServer(item, (msg, chat_id) => {
+      ChattingCache_sendProperty.state().set((old: any) => old.filter((x: any) => !isEqual(item, x)))
+      next()
+    }, () => { });
+  }))
 
   const { db } = useFirestore().init()
 
@@ -259,6 +270,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
     if (lchat_id) {
       ChattingCache_sendProperty.insertToCache(lchat_id, chat_to, group_id, message, attach, false)
+      sync(ChattingCache_sendProperty.state().get())
       setNotif(lchat_id, message)
       callback && callback(lchat_id, dummyMsg)
     } else {

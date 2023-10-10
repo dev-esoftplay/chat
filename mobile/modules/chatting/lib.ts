@@ -1,10 +1,10 @@
 // useLibs
 // noPage
 
-import { esp } from "esoftplay"
-import useFirestore, { DataId, updateValue } from "esoftplay-firestore"
+import useFirestore, { DataId, updateValue, userData } from "esoftplay-firestore"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
+import esp from "esoftplay/esp"
 import { doc, serverTimestamp, writeBatch } from "firebase/firestore"
 import { Alert } from "react-native"
 
@@ -36,7 +36,7 @@ export default function m(): ChattingLibReturn {
   const pathHistory = [rootPath, 'chat', 'history']
   const pathUsers = [rootPath, 'chat', 'users']
 
-  const { db } = useFirestore().init()
+  const { db, app } = useFirestore().init()
 
   function makeid(length: number) {
     var result = '';
@@ -50,150 +50,194 @@ export default function m(): ChattingLibReturn {
   }
 
   function chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
-    const user = UserClass?.state?.()?.get?.()
+    const firestoreUser = userData.get()[app.name]
+    const user = UserClass.state().get()
 
     if (!user) return
+    if (!firestoreUser) return
+
     if (user?.id == chat_to) {
       Alert.alert(esp.lang("chatting/lib", "alert_title"), esp.lang("chatting/lib", "alert_msg"))
       return
     }
     const chat_id = (new Date().getTime() / 1000).toFixed(0) + "-" + makeid(4)
     const time = (new Date().getTime() / 1000).toFixed(0)
-    let msg: any = {
-      msg: message,
-      read: '0',
-      time: time,
-      timestamp: serverTimestamp(),
-      user_id: user?.id,
-    }
-    if (attach) {
-      msg['attach'] = attach
-    }
-    /* buat chat member default */
-    let memberMe = {
-      user_id: user?.id,
-      is_typing: false,
-      draf: ''
-    }
-    let memberNotMe = {
-      user_id: chat_to,
-      is_typing: false,
-      draf: ''
-    }
 
-    /* me */
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberMe, () => { })
-    /* notMe */
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberNotMe, () => { })
+    getUID(chat_to, (uid) => {
+      let msg: any = {
+        msg: message,
+        read: '0',
+        time: time,
+        timestamp: serverTimestamp(),
+        user_id: user?.id,
+        uid: firestoreUser?.uid,
+        uidto: uid
+      }
+      if (attach) {
+        msg['attach'] = attach
+      }
+      /* buat chat member default */
+      let memberMe = {
+        user_id: user?.id,
+        is_typing: false,
+        draf: ''
+      }
+      let memberNotMe = {
+        user_id: chat_to,
+        is_typing: false,
+        draf: ''
+      }
 
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
-      msg['key'] = dt?.id
-      if (callback) callback(msg, chat_id)
-      if (withHistory) historyNew(chat_id, chat_to, message)
+      //create path to chat_id
+      useFirestore().addDocument(db, [...pathChat, chat_id], {}, () => {
+        /* me */
+        useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberMe, () => { })
+        /* notMe */
+        useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberNotMe, () => { })
+
+        useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
+          msg['key'] = dt?.id
+          if (callback) callback(msg, chat_id)
+          if (withHistory) historyNew(chat_id, chat_to, message)
+        })
+      }, esp.log)
+
     })
-
   }
   function historyNew(chat_id: string, chat_to: string, last_message: string): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
+    const firestoreUser = userData.get()[app.name]
 
     if (!user) return
-    const _time = (new Date().getTime() / 1000).toFixed(0)
-    let me = {
-      chat_id: chat_id,
-      time: _time,
-      chat_to: chat_to,
-      last_message,
-      read: "0",
-      sender_id: user?.id,
-      group_id,
-      user_id: user?.id
-    }
-    let notMe = {
-      chat_id: chat_id,
-      time: _time,
-      chat_to: user?.id,
-      last_message,
-      read: "0",
-      sender_id: user?.id,
-      group_id,
-      user_id: chat_to
-    }
+    if (!firestoreUser) return
 
-    let historyMe: any = {}
-    const historyNotMe = {
-      chat_to_username: user?.name,
-      chat_to_image: user?.image
-    }
-
-    useFirestore().getCollectionWhere(db, [...pathUsers], [["user_id", "==", chat_to]], (arr) => {
-      if (arr.length > 0) {
-        historyMe["chat_to_username"] = arr?.[0]?.data?.username
-        historyMe["chat_to_image"] = arr?.[0]?.data?.image
+    getUID(chat_to, (uid) => {
+      const _time = (new Date().getTime() / 1000).toFixed(0)
+      let me = {
+        chat_id: chat_id,
+        time: _time,
+        chat_to: chat_to,
+        last_message,
+        read: "0",
+        sender_id: user?.id,
+        group_id: String(group_id),
+        user_id: user?.id,
+        uid: firestoreUser?.uid,
+        uidto: uid
       }
-      useFirestore().addCollection(db, [...pathHistory], { ...me, ...historyMe }, () => { })
-      useFirestore().addCollection(db, [...pathHistory], { ...notMe, ...historyNotMe }, () => { })
+      let notMe = {
+        chat_id: chat_id,
+        time: _time,
+        chat_to: user?.id,
+        last_message,
+        read: "0",
+        sender_id: user?.id,
+        group_id: String(group_id),
+        user_id: chat_to,
+        uid: uid,
+        uidto: firestoreUser.uid
+      }
+
+      let historyMe: any = {}
+      const historyNotMe = {
+        chat_to_username: user?.name,
+        chat_to_image: user?.image
+      }
+
+      useFirestore().getCollectionWhere(db, [...pathUsers], [["user_id", "==", chat_to]], (arr) => {
+        if (arr.length > 0) {
+          historyMe["chat_to_username"] = arr?.[0]?.data?.username
+          historyMe["chat_to_image"] = arr?.[0]?.data?.image
+        }
+        useFirestore().addCollection(db, [...pathHistory], { ...me, ...historyMe }, () => { })
+        useFirestore().addCollection(db, [...pathHistory], { ...notMe, ...historyNotMe }, () => { })
+      })
     })
 
   }
   function chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
 
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
+    const firestoreUser = userData.get()[app.name]
 
     if (!user) return
+    if (!firestoreUser) return
 
-    const _time = (new Date().getTime() / 1000).toFixed(0)
-    let msg: any = {
-      msg: message,
-      read: '0',
-      time: _time,
-      timestamp: serverTimestamp(),
-      user_id: user?.id,
-    }
-    if (attach) {
-      msg['attach'] = attach
-    }
-    /* buat chat member default */
-    let member = {
-      is_typing: false,
-      draf: '',
-      user_id: user?.id
-    }
-    let notMe = {
-      is_typing: false,
-      draf: '',
-      user_id: chat_to
-    }
-    /* simpan pesan */
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
-      msg['key'] = dt?.id
-      if (callback) {
-        callback(msg)
+    getUID(chat_to, (uid) => {
+      const _time = (new Date().getTime() / 1000).toFixed(0)
+      let msg: any = {
+        msg: message,
+        read: '0',
+        time: _time,
+        timestamp: serverTimestamp(),
+        user_id: user?.id,
+        uid: firestoreUser?.uid,
+        uidto: uid
       }
-    })
+      if (attach) {
+        msg['attach'] = attach
+      }
+      /* buat chat member default */
+      let member = {
+        is_typing: false,
+        draf: '',
+        user_id: user?.id
+      }
+      let notMe = {
+        is_typing: false,
+        draf: '',
+        user_id: chat_to
+      }
+      /* simpan pesan */
+      useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
+        msg['key'] = dt?.id
+        if (callback) {
+          callback(msg)
+        }
+      })
 
-    /* set members */
-    useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
-      useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], member, () => { })
-    })
+      /* set members */
+      useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
+        useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], member, () => { })
+      })
 
-    if (!chat_to) return
-    useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
-      useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
-    })
+      if (!chat_to) return
+      useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
+        useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
+      })
 
-    if (!chat_id) return
-    useFirestore().getCollectionIds(db, [...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
-      updateBatch(keys, pathHistory, [
-        { key: "time", value: _time },
-        { key: "last_message", value: message },
-        { key: "read", value: "0" },
-        { key: "sender_id", value: user?.id },
-      ])
+      if (!chat_id) return
+      useFirestore().getCollectionWhere(db, [...pathHistory], [['chat_id', '==', chat_id]], (datas) => {
+        if (datas.length > 0) {
+          datas.forEach((val) => {
+            useFirestore().updateDocument(db, [...pathHistory, val.id], [
+              { key: "uid", value: val?.data?.user_id == user?.id ? firestoreUser?.uid : uid },
+              { key: "uidto", value: val?.data?.user_id == user?.id ? uid : firestoreUser?.uid },
+            ], () => { })
+          })
+        }
+      })
+      useFirestore().getCollectionIds(db, [...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
+        updateBatch(keys, pathHistory, [
+          { key: "time", value: _time },
+          { key: "last_message", value: message },
+          { key: "read", value: "0" },
+          { key: "sender_id", value: user?.id },
+        ])
+      })
+    })
+  }
+
+  function getUID(user_id: string, cb: (uid: string) => void): void {
+    useFirestore().getCollectionWhereOrderBy(db, [...pathUsers], [["user_id", "==", String(user_id)]], [["uid", "desc"]], (dt) => {
+      if (dt.length > 0) {
+        cb(dt?.[0]?.data?.uid)
+      }
     })
   }
 
   function chatAll(chat_id: string, callback: (messages: any[]) => void, lastIndex?: string): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
 
     if (!user) return
     useFirestore().getCollectionWhereOrderBy(db, [...pathChat, chat_id, 'conversation'], [], [], (arr) => {
@@ -213,7 +257,7 @@ export default function m(): ChattingLibReturn {
     })
   }
   function chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
 
     if (!user) return
     useFirestore().getDocument(db, [...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
@@ -225,13 +269,13 @@ export default function m(): ChattingLibReturn {
     })
   }
   function chatDelete(chat_id: string, key: string): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
 
     if (!user) return
-    useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => { })
+    useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => { }, (e) => esp.log("DELETE USER", e))
   }
   function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, isStartPage?: number, limit?: number): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
     if (!user) return
     useFirestore().paginate(db, isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], limit || perPage, (dt, endR) => {
       if (dt) {
@@ -242,7 +286,7 @@ export default function m(): ChattingLibReturn {
     })
   }
   function chatListenChange(chat_id: string, callback: (removedChild: any) => void) {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
 
     if (!user) return
     useFirestore().listenCollection(db, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
@@ -250,13 +294,13 @@ export default function m(): ChattingLibReturn {
     })
   }
   function chatUpdate(key: string, chat_id: string, value: updateValue[]): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
     if (!key) return
     if (!user) return
     useFirestore().updateDocument(db, [...pathChat, chat_id, 'conversation', key], value, () => { })
   }
   function listenUser(user_id: string, callback: (user: any) => void) {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
 
     if (!user) return
     useFirestore().listenDocument(db, [...pathUsers, user_id], (dt) => {
@@ -295,45 +339,26 @@ export default function m(): ChattingLibReturn {
     }
   }
 
-  function setUser(username?: string, image?: string, deleted?: boolean): void {
-    const user = UserClass?.state?.()?.get?.()
+  function setUser(username?: string, image?: string, deleted?: boolean) {
+    const instance = useFirestore().init()
+    const firestoreUser = userData.get()[instance.app.name]
+    const user = UserClass.state().get()
 
     if (!user) return
-    useFirestore().getCollectionWhere(db, [...pathUsers], [["user_id", "==", user?.id]], (data) => {
-      if (data?.length > 0) {
-        // update username & image user
-        useFirestore().updateDocument(db, [...pathUsers, data?.[0]?.id], [
-          { key: "username", value: LibUtils.ucwords(username || user?.name) },
-          { key: "image", value: image || user?.image },
-        ], () => {
-          if (data?.length > 1) {
-            const keys = data.map((t) => t.id)
-            deleteDuplicatedUser(keys)
-          }
-        })
+    if (!firestoreUser) return
+    useFirestore().addDocument(instance.db, [...pathUsers, firestoreUser?.uid], {
+      uid: firestoreUser?.uid,
+      user_id: user?.id,
+      username: LibUtils.ucwords(username || user?.name),
+      image: image || user?.image,
+      deleted: deleted ? "1" : "0"
+    }, () => {
 
-        if (data?.[0]?.data?.username != user?.name || data?.[0]?.data?.image != user?.image) {
-          //update username & image history
-          useFirestore().getCollectionIds(db, [...pathHistory], [["chat_to", "==", user?.id]], (keys) => {
-            updateBatch(keys, pathHistory, [
-              { key: "chat_to_username", value: LibUtils.ucwords(username || user?.name) },
-              { key: "chat_to_image", value: image || user?.image },
-            ])
-          })
-        }
-      } else {
-        //insert to user
-        useFirestore().addCollection(db, [...pathUsers], {
-          user_id: user?.id,
-          username: LibUtils.ucwords(username || user?.name),
-          image: image || user?.image,
-          deleted: deleted ? '1' : '0'
-        }, () => { })
-      }
-    })
+    }, (er) => esp.log("ERROR [SETUSER] : ", er))
+
   }
   function getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
-    const user = UserClass?.state?.()?.get?.()
+    const user = UserClass.state().get()
 
     if (!user) return
     let chattochecks: string[] = [];

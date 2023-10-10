@@ -1,6 +1,5 @@
 // useLibs
 // noPage
-import { useSafeState } from 'esoftplay';
 import useFirestore from 'esoftplay-firestore';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { useEffect } from 'react';
@@ -8,6 +7,7 @@ import { useEffect } from 'react';
 //@ts-ignore
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import moment from 'esoftplay/moment';
+import useSafeState from 'esoftplay/state';
 moment().locale('id')
 
 export default function m(chat_to: string): [string, any] {

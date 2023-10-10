@@ -1,10 +1,10 @@
 // withHooks
 // noPage
 
-import { useGlobalReturn, useGlobalState } from "esoftplay"
-import { ChattingItem } from "esoftplay/cache/chatting/chat/import"
 import { ChattingLib } from "esoftplay/cache/chatting/lib/import"
 import { LibObject } from "esoftplay/cache/lib/object/import"
+import useGlobalState, { useGlobalReturn } from "esoftplay/global"
+import { ChattingItem } from "esoftplay/modules/chatting/chat"
 
 
 export interface ChattingCache_sendArgs {
@@ -14,13 +14,8 @@ export interface ChattingCache_sendProps {
 
 }
 
-
-let allowProcessMsg = useGlobalState<boolean>(true)
-const stateMsg = useGlobalState<any[]>([], {
-  loadOnInit: true,
-  persistKey: 'chatting_cache_chat1', inFile: true, isUserData: true, listener(data) {
-    syncFromCacheNew()
-  },
+const stateMsg = useGlobalState<any>([], {
+  persistKey: 'chatting_cache_chat', isUserData: true,
 })
 
 export function state(): useGlobalReturn<any[]> {
@@ -28,8 +23,6 @@ export function state(): useGlobalReturn<any[]> {
 }
 
 export function insertToCache(chat_id: string, chat_to: string, group_id: string, message: string, attach: any, history?: boolean) {
-  const msgCache = stateMsg.get()
-
   const cacheData = {
     chat_id,
     chat_to,
@@ -39,39 +32,7 @@ export function insertToCache(chat_id: string, chat_to: string, group_id: string
     history: history || false
   }
 
-  const edit = LibObject.push(msgCache, cacheData)()
-  stateMsg.set(edit)
-}
-
-export function syncFromCacheNew() {
-
-  if (allowProcessMsg.get()) {
-    allowProcessMsg.set(false)
-    execSend(0)
-  }
-  function execSend(idx: number, chat_id?: string) {
-    const arr = stateMsg.get()
-    let currentChat = arr?.[idx]
-    let nextChat = arr?.[idx + 1]
-
-    if (currentChat) {
-      chat_id = chat_id ? chat_id : currentChat.chat_id
-      if (chat_id) {
-        currentChat = { ...currentChat, chat_id: chat_id }
-      }
-      sendCacheToServer(currentChat, (msg, chat_id) => {
-        if (nextChat) {
-          stateMsg.set(LibObject.splice(stateMsg.get(), 0, 1)())
-          execSend(idx)
-        } else {
-          allowProcessMsg.set(true)
-          stateMsg.set(LibObject.splice(stateMsg.get(), 0, 1)())
-        }
-      }, () => { });
-    } else {
-      allowProcessMsg.set(true)
-    }
-  }
+  stateMsg.set((t: any) => LibObject.push(t, cacheData)())
 }
 
 export function sendCacheToServer(messageObject: any, onResult: (res: any, chat_id?: string) => void, onFailed: (err: string) => void) {

@@ -1,8 +1,8 @@
 // useLibs
 // noPage
 
-import { esp } from "esoftplay";
 import useFirestore from "esoftplay-firestore";
+import esp from "esoftplay/esp";
 import {
   collection,
   DocumentData,
