@@ -1,7 +1,7 @@
 // useLibs
 // noPage
 
-import { useSafeState } from "esoftplay";
+import useSafeState from "esoftplay/state";
 import Storage from "esoftplay/storage";
 import { useLayoutEffect } from "react";
 

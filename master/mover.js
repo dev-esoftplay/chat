@@ -92,22 +92,25 @@ if (fs.existsSync("./libs.json")) {
 /* inject user Index */
 const be = `//esoftplay-chatting`
 const toBe = `
-      if (esp.config('firebase').hasOwnProperty('apiKey')) {
-        try {
-          const Firestore = esp.mod('chatting/firestore')
-          Firestore()?.init?.()
-          if (user){
-            const ChattingLib = esp.mod('chatting/lib')
-            ChattingLib().setUser()
-          }
-        } catch (error) {
+  useLayoutEffect(() => {
+    if (userEmail && esp.config('firebase').hasOwnProperty('apiKey')) {
+      try {
+        const Firestore = esp.mod('chatting/firestore')
+        Firestore()?.init?.()
+        const ChattingLib = esp.mod('chatting/lib')
+        ChattingLib().setUser()
+      } catch (error) {
 
-        }
       }
+    }
+  }, [userEmail])
 `
 if (fs.existsSync('../esoftplay/modules/user/index.tsx')) {
   let userIndexString = fs.readFileSync('../esoftplay/modules/user/index.tsx', { encoding: 'utf-8' })
   userIndexString = userIndexString.replace(be, toBe)
+  userIndexString = userIndexString.replace(`//esoftplay-user-class-import`, `import { UserClass } from 'esoftplay/cache/user/class/import';`)
+  userIndexString = userIndexString.replace(`//esoftplay-user-class-hook`, `const userEmail = UserClass.state().useSelector(s => s?.email)`)
+
   fs.writeFileSync('../esoftplay/modules/user/index.tsx', userIndexString, { encoding: 'utf-8' })
   console.log("chat inserted !")
 }

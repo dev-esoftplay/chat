@@ -2,7 +2,7 @@
 // useLibs
 // noPage
 import { esp, useSafeState } from 'esoftplay';
-import Firestore from 'esoftplay-firestore';
+import useFirestore from 'esoftplay-firestore';
 import { ChattingCache } from 'esoftplay/cache/chatting/cache/import';
 import { ChattingCache_sendProperty } from 'esoftplay/cache/chatting/cache_send/import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
@@ -12,8 +12,10 @@ import { ChattingOpen_setter } from 'esoftplay/cache/chatting/open_setter/import
 import { LibCurl } from 'esoftplay/cache/lib/curl/import';
 import { LibObject } from 'esoftplay/cache/lib/object/import';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
+import { UseTasks } from 'esoftplay/cache/use/tasks/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
+import isEqual from 'react-fast-compare';
 
 import moment from 'esoftplay/moment';
 import { collection, DocumentData, getDocs, limit, onSnapshot, orderBy, query, QuerySnapshot, startAfter } from 'firebase/firestore';
@@ -83,6 +85,8 @@ export interface ChatChatReturn {
 const PAGE_SIZE = 10;
 const lastVisible = useGlobalState<any>(null)
 
+const useTasks = UseTasks()
+
 export default function m(props: ChattingChatProps): ChatChatReturn {
   const path = ChattingLib().pathChat
   const user = UserClass.state().useSelector((s: any) => s)
@@ -102,6 +106,15 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
   const [online, opposite] = ChattingOnline_listener(chat_to)
   const [isOpenChat] = ChattingOpen_listener(chat_id, chat_to)
+
+  const [sync] = useTasks((item: any) => new Promise((next) => {
+    ChattingCache_sendProperty.sendCacheToServer(item, (msg, chat_id) => {
+      ChattingCache_sendProperty.state().set((old: any) => old.filter((x: any) => !isEqual(item, x)))
+      next()
+    }, () => { });
+  }))
+
+  const { db } = useFirestore().init()
 
   ChattingOpen_setter(chat_id)
 
@@ -157,17 +170,17 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
     if (!user || !user.hasOwnProperty("id")) return
 
-    Firestore.update.doc([...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
+    useFirestore().updateDocument(db, [...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
+    useFirestore().getCollectionIds(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        useFirestore().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    Firestore.get.collectionIds([...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
+    useFirestore().getCollectionIds(db, [...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        Firestore.update.doc([...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        useFirestore().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
   }
@@ -176,7 +189,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return () => { }
     }
-    const colRef = collection(Firestore.db(), ...path, chat_id, 'conversation')
+    const colRef = collection(db, ...path, chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), limit(PAGE_SIZE))
 
     let datas: any[] = []
@@ -198,7 +211,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return
     }
-    const colRef = collection(Firestore.db(), ...path, chat_id, 'conversation')
+    const colRef = collection(db, ...path, chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), startAfter(lastVisible.get()), limit(PAGE_SIZE))
 
     let datas: any[] = []
@@ -257,6 +270,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
     if (lchat_id) {
       ChattingCache_sendProperty.insertToCache(lchat_id, chat_to, group_id, message, attach, false)
+      sync(ChattingCache_sendProperty.state().get())
       setNotif(lchat_id, message)
       callback && callback(lchat_id, dummyMsg)
     } else {

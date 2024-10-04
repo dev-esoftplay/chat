@@ -29,7 +29,12 @@
       "associatedDomains": [
         "applinks:*.domain.com",
         "applinks:domain.com"
-      ]
+      ],
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "itms-apps"
+        ]
+      }
     },
     "android": {
       "package": "com.domain",
@@ -59,6 +64,7 @@
         }
       ]
     },
-    "jsEngine": "jsc"
+    "jsEngine": "hermes",
+    "runtimeVersion": "1"
   }
 }

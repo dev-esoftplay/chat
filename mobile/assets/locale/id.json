@@ -1,25 +1,120 @@
 {
   "chatting/chat": {
-    "user_not_found": "Tujuan chat tidak ditemukan",
-    "no_chat_myself": "Tidak dapat mengirim pesan ke diri sendiri",
-    "user_not_valid": "Tujuan chat tidak valid",
     "chatto_notfound": "Tujuan chat tidak ditemukan",
+    "no_chat_myself": "Tidak dapat mengirim pesan ke diri sendiri",
+    "not_valid": "Tujuan chat tidak valid",
     "self_send": "Tidak dapat mengirim pesan ke diri sendiri",
-    "not_valid": "Tujuan chat tidak valid"
-  },
-  "chatting/lib": {
-    "no_chat_self": "Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri",
-    "oops": "Oops..!",
-    "alert_title": "Oops..!",
-    "alert_msg": "Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri"
-  },
-  "chatting/login": {
-    "wait": "Mohon tunggu",
-    "error": "Kesalahan",
-    "progress_wait": "Mohon tunggu",
-    "alert_title": "Kesalahan"
+    "user_not_found": "Tujuan chat tidak ditemukan",
+    "user_not_valid": "Tujuan chat tidak valid"
   },
   "chatting/chatting": {
     "input_label": "Pesan"
+  },
+  "chatting/lib": {
+    "alert_msg": "Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri",
+    "alert_title": "Oops..!",
+    "no_chat_self": "Mohon Maaf, anda tidak dapat mengirim pesan dengan akun anda sendiri",
+    "oops": "Oops..!"
+  },
+  "chatting/login": {
+    "alert_title": "Kesalahan",
+    "error": "Kesalahan",
+    "progress_wait": "Mohon tunggu",
+    "wait": "Mohon tunggu"
+  },
+  "lib/curl": {
+    "alert_cancel": "Tutup",
+    "alert_msg": "Sepertinya perangkatmu ada masalah jaringan",
+    "alert_ok": "Coba Lagi",
+    "alert_title": "Oops..! Gagal menyambung ke server",
+    "error_message": "Terjadi kesalahan, biar %s bereskan, silahkan coba lagi atau kembali ke halaman utama",
+    "msg_failed": "Koneksi internet kamu tidak stabil, silahkan coba lagi"
+  },
+  "lib/datepicker": {
+    "done": "Done",
+    "month1": "Januari",
+    "month10": "Oktober",
+    "month11": "November",
+    "month12": "Desember",
+    "month2": "Februari",
+    "month3": "Maret",
+    "month4": "April",
+    "month5": "Mei",
+    "month6": "Juni",
+    "month7": "Juli",
+    "month8": "Agustus",
+    "month9": "September"
+  },
+  "lib/document": {
+    "waiting_upload": "Mohon tunggu sedang mengunggah dokumen"
+  },
+  "lib/dropdown": {
+    "select": "Select"
+  },
+  "lib/editbox": {
+    "btn_save": "Simpan"
+  },
+  "lib/image": {
+    "cam_msg": "Mohon Pastikan anda memberikan izin %s untuk dapat mengambil foto",
+    "cam_title": "%s tidak dapat mengakses kamera ",
+    "gallery_msg": "Mohon Pastikan anda memberikan izin %s untuk dapat mengambil foto",
+    "gallery_title": "%s tidak dapat mengakses galeri ",
+    "wait": "Mohon tunggu, Sedang mengunggah foto",
+    "wait_upload": "Mohon Tunggu, Sedang mengunggah foto"
+  },
+  "lib/image_crop": {
+    "alert_out": "Garis putus-putus tidak boleh keluar dari gambar",
+    "btn_save": "SIMPAN",
+    "text_msg": "Geser dan cubit layar untuk menyesuaikan bagian foto yang ingin dipakai (pastikan bagian foto berada di dalam garis putus-putus) lalu crop jika sudah sesuai",
+    "waiting": "Sedang menyiapkan...",
+    "waiting_crop": "Sedang memotong gambar.."
+  },
+  "lib/image_multi": {
+    "selected": " Selected"
+  },
+  "lib/image_shadow": {
+    "error": "width and height is required"
+  },
+  "lib/infinite": {
+    "empty_data": "Belum ada data"
+  },
+  "lib/net_status": {
+    "offline": "Device is Offline",
+    "online": "Device is Online"
+  },
+  "lib/notification": {
+    "permission": "Please enable notifications permissions"
+  },
+  "lib/updater": {
+    "alert_dev": "Development Mode",
+    "alert_dev_msg": "Update not working in development mode!",
+    "alert_expo": "Your app is up-to-date",
+    "alert_info": "Informasi",
+    "alert_msg": "Pembaharuan berhasil diinstall",
+    "alert_title": "App is fine",
+    "alert_update": "App is fine",
+    "alert_uptodate": "Your app is up-to-date",
+    "ok": "Ok",
+    "wait_check": "Sedang memeriksa versi terbaru"
+  },
+  "lib/utils": {
+    "toas_latlongfrom": "LatLongFrom tidak valid",
+    "toas_latlongto": "LatlongTo tidak valid"
+  },
+  "lib/version": {
+    "btn_update": "Update Sekarang",
+    "skip": "Nanti",
+    "update": "Update",
+    "update_now": "Update to a new version now",
+    "version_available": "A new version is available"
+  },
+  "lib/video": {
+    "missing_code": "Missing Youtube Code in Props"
+  },
+  "main/index": {
+    "helo_msg": "Hellow Esoftplay developer, jangan lupa bismillah dulu. (-̀ᴗ-́)و ̑̑"
+  },
+  "use/deeplink": {
+    "msg_err": "Oops...!"
   }
 }

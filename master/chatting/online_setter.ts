@@ -1,6 +1,6 @@
 // useLibs
 // noPage
-import Firestore from 'esoftplay-firestore';
+import useFirestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import { useEffect } from 'react';
@@ -12,12 +12,14 @@ export default function m(): void {
 
   function _set() {
     if (user && user.hasOwnProperty("id")) {
+      const { db } = useFirestore().init()
       const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
 
-      Firestore.get.collectionIds([...path], [["user_id", '==', user?.id]], (id: any) => {
-        if (id.length > 0) {
-          Firestore.update.doc([...path, id?.[0]], [{ key: "online", value: timestamp }], () => { })
+      // adding orderby to get only document with uid field
+      useFirestore().getCollectionWhereOrderBy(db, [...path], [["user_id", '==', user?.id]], [["uid", "desc"]], (dta: any) => {
+        if (dta.length > 0) {
+          useFirestore().updateDocument(db, [...path, dta[0].id], [{ key: "online", value: timestamp }], () => { })
         }
       })
     }

@@ -1,8 +1,8 @@
 // useLibs
 // noPage
 
-import { esp } from "esoftplay";
-import Firestore from "esoftplay-firestore";
+import useFirestore from "esoftplay-firestore";
+import esp from "esoftplay/esp";
 import {
   collection,
   DocumentData,
@@ -26,6 +26,7 @@ export interface ChattingPaginageReturn {
 export default function m(): ChattingPaginageReturn {
   const rootPath: string = esp?.appjson?.()?.expo?.name
   const pathChat = [rootPath, 'chat', 'chat']
+  const { db } = useFirestore().init()
 
   function getFirstChatsBatch(
     chat_id: string,
@@ -33,7 +34,7 @@ export default function m(): ChattingPaginageReturn {
   ): Unsubscribe {
     const q = query(
       //@ts-ignore
-      collection(Firestore.db(), ...[...pathChat, chat_id, "conversation"]),
+      collection(db, ...[...pathChat, chat_id, "conversation"]),
       orderBy("time", "desc"),
       limit(itemPerPage)
     );
@@ -44,7 +45,7 @@ export default function m(): ChattingPaginageReturn {
   async function chatsNextBatch(chat_id: string, lastDocument: any) {
     const next = query(
       //@ts-ignore
-      collection(Firestore.db(), ...[...pathChat, chat_id, "conversation"]),
+      collection(db, ...[...pathChat, chat_id, "conversation"]),
       orderBy("time", "desc"),
       startAfter(lastDocument),
       limit(itemPerPage)

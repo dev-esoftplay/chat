@@ -1,10 +1,10 @@
 // useLibs
 // noPage
-import { esp, useGlobalReturn } from 'esoftplay';
-import Firestore from 'esoftplay-firestore';
+import useFirestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
-import useGlobalState from 'esoftplay/global';
+import esp from 'esoftplay/esp';
+import useGlobalState, { useGlobalReturn } from 'esoftplay/global';
 import { useEffect } from 'react';
 
 export interface ChatHistoryReturn {
@@ -56,7 +56,7 @@ export default function m(): ChatHistoryReturn {
           histories.push({ ..._snapshoot, ...item })
           setvalue()
         } else {
-          Firestore.get.collectionWhere([...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
+          useFirestore().getCollectionWhere(useFirestore().init().db, [...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
             if (snap) {
               histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
               setvalue()
@@ -73,7 +73,7 @@ export default function m(): ChatHistoryReturn {
   function _get() {
     if (!user || !user.hasOwnProperty("id") || !group_id) return
     const pathHistory = ChattingLib().pathHistory
-    Firestore.get.collectionWhereOrderBy([...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
+    useFirestore().getCollectionWhereOrderBy(useFirestore().init().db, [...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
       update(snapshoot)
     })
   }
