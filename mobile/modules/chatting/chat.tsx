@@ -313,9 +313,20 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     }
   }
 
+  function formatTimestampToDate(timestamp: number) {
+    const date = new Date(Number(timestamp) * 1000);
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).
+      padStart(2, '0')}-${String(date.getDate()).
+        padStart(2, '0')} ${String(date.getHours()).
+          padStart(2, '0')}:${String(date.getMinutes()).
+            padStart(2, '0')}:${String(date.getSeconds()).
+              padStart(2, '0')}`;
+    return formattedDate
+  }
+
   return {
     chat_id: chat_id,
-    conversation: data.map((item: any) => ({ ...item?.data, ...item, key: item?.id })),
+    conversation: data.map((item: any) => ({ ...item?.data, ...item, key: item?.id, time: formatTimestampToDate(item.time) })),
     chat_to_online: online,
     chat_to_user: opposite,
     error: error,
