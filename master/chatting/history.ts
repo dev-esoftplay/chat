@@ -14,12 +14,11 @@ export interface ChatHistoryReturn {
   unread: number
 }
 
-const cattingHistory: any = useGlobalState<any[]>([], { persistKey: 'chatting_history', inFile: true, isUserData: true });
+const cattingHistory: any = useGlobalState<any[]>([], { inFastStorage: true, persistKey: 'chatting_history', inFile: true, isUserData: true });
 export function state(): useGlobalReturn<any[]> {
   return cattingHistory
 }
 export default function m(): ChatHistoryReturn {
-  const [data, setData] = state().useState()
   const user = UserClass.state().useSelector((s: any) => s)
   const group_id = esp.config("group_id")
 
@@ -34,7 +33,7 @@ export default function m(): ChatHistoryReturn {
     const setvalue = () => {
       count++
       if (hist.length == count) {
-        setData(histories.sort((a, b) => b.time - a.time))
+        state().set(histories.sort((a, b) => b.time - a.time))
       }
     }
 
@@ -79,9 +78,9 @@ export default function m(): ChatHistoryReturn {
   }
 
   return {
-    data: data,
+    data: state().useSelector((x: any) => x),
     update: _get,
     deleteCache: state().reset,
-    unread: data?.filter?.((x => x?.data?.read == 0)).length
+    unread: state().useSelector((x: any) => x).filter?.(((x: any) => x?.data?.read == 0)).length
   }
 }
