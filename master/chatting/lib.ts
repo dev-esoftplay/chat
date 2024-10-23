@@ -5,6 +5,7 @@ import useFirestore, { DataId, updateValue, userData } from "esoftplay-firestore
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
 import esp from "esoftplay/esp"
+import FastStorage from "esoftplay/mmkv"
 import { doc, serverTimestamp, writeBatch } from "firebase/firestore"
 import { Alert } from "react-native"
 
@@ -229,9 +230,18 @@ export default function m(): ChattingLibReturn {
   function chatDelete(chat_id: string, key: string): void {
     const user = UserClass?.state?.()?.get?.()
     const { db } = useFirestore().init()
+    const persistKey = 'chatting_chat_message0' + chat_id
 
     if (!user) return
-    useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => { })
+    useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => {
+      const storedValue: any = FastStorage.getItemSync(persistKey);
+      const data = JSON.parse(storedValue)
+      const index = data.findIndex((x: any) => x?.key == key)
+      if (index > -1) {
+        const newData = esp.mod("lib/object").splice(data, index, 1)()
+        FastStorage.setItem(persistKey, JSON.stringify(newData));
+      }
+    })
   }
   function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, isStartPage?: number, limit?: number): void {
     const user = UserClass?.state?.()?.get?.()
