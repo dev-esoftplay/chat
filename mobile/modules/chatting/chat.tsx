@@ -96,7 +96,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   const [hasNext, setHasNext] = useSafeState(true)
   // const [data, setData] = useSafeState<any>([])
 
-  const [data, setData] = ChattingCache([], 'chatting_chat_message0' + chat_id)
+  const [data, setData] = ChattingCache([], 'chatting_chat_message01' + chat_id)
   const [loading, setLoading] = useSafeState(data?.length > 0 ? false : true)
   const [isReady, setIsReady] = useSafeState(data?.length > 0 ? false : true)
 
