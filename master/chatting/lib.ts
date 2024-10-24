@@ -230,7 +230,7 @@ export default function m(): ChattingLibReturn {
   function chatDelete(chat_id: string, key: string): void {
     const user = UserClass?.state?.()?.get?.()
     const { db } = useFirestore().init()
-    const persistKey = 'chatting_chat_message0' + chat_id
+    const persistKey = 'chatting_chat_message01' + chat_id
 
     if (!user) return
     useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => {
