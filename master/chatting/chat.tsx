@@ -1,8 +1,5 @@
-// @ts-ignore
 // useLibs
 // noPage
-import { esp, useSafeState } from 'esoftplay';
-import useFirestore from 'esoftplay-firestore';
 import { ChattingCache } from 'esoftplay/cache/chatting/cache/import';
 import { ChattingCache_sendProperty } from 'esoftplay/cache/chatting/cache_send/import';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
@@ -17,7 +14,9 @@ import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
 import isEqual from 'react-fast-compare';
 
+import esp from 'esoftplay/esp';
 import moment from 'esoftplay/moment';
+import useSafeState from 'esoftplay/state';
 import { collection, DocumentData, getDocs, limit, onSnapshot, orderBy, query, QuerySnapshot, startAfter } from 'firebase/firestore';
 import { useEffect } from 'react';
 moment().locale('id')
@@ -96,7 +95,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   const [hasNext, setHasNext] = useSafeState(true)
   // const [data, setData] = useSafeState<any>([])
 
-  const [data, setData] = ChattingCache([], 'chatting_chat_message01' + chat_id)
+  const [data, setData] = ChattingCache<any>([], 'chatting_chat_message02' + chat_id)
   const [loading, setLoading] = useSafeState(data?.length > 0 ? false : true)
   const [isReady, setIsReady] = useSafeState(data?.length > 0 ? false : true)
 
@@ -114,7 +113,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     }, () => { });
   }))
 
-  const { db } = useFirestore().init()
+  const { db } = esp.mod("firestore/index")().init()
 
   ChattingOpen_setter(chat_id)
 
@@ -170,17 +169,17 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
     if (!user || !user.hasOwnProperty("id")) return
 
-    useFirestore().updateDocument(db, [...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
-    useFirestore().getCollectionIds(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
+    esp.mod("firestore/index")().updateDocument(db, [...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
+    esp.mod("firestore/index")().getCollectionIds(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        useFirestore().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        esp.mod("firestore/index")().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    useFirestore().getCollectionIds(db, [...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
+    esp.mod("firestore/index")().getCollectionIds(db, [...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        useFirestore().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        esp.mod("firestore/index")().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
   }
@@ -189,6 +188,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return () => { }
     }
+    //@ts-ignore
     const colRef = collection(db, ...path, chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), limit(PAGE_SIZE))
 
@@ -211,6 +211,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return
     }
+    //@ts-ignore
     const colRef = collection(db, ...path, chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), startAfter(lastVisible.get()), limit(PAGE_SIZE))
 

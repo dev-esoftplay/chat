@@ -1,8 +1,8 @@
 // useLibs
 // noPage
-import useFirestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
+import esp from 'esoftplay/esp';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
@@ -12,13 +12,13 @@ export default function m(chat_id: string): void {
 
   function _set() {
     if (chat_id && user) {
-      const { db } = useFirestore().init()
+      const { db } = esp.mod("firestore/index")().init()
       const path = ChattingLib().pathChat
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
 
-      useFirestore().getCollectionIds(db, [...path, chat_id, "member"], [["user_id", "==", user?.id]], (arr: any) => {
+      esp.mod("firestore/index")().getCollectionIds(db, [...path, chat_id, "member"], [["user_id", "==", user?.id]], (arr: any) => {
         if (arr.length > 0) {
-          useFirestore().updateDocument(db, [...path, chat_id, "member", arr?.[0]], [{ key: "is_open", value: timestamp }], () => { })
+          esp.mod("firestore/index")().updateDocument(db, [...path, chat_id, "member", arr?.[0]], [{ key: "is_open", value: timestamp }], () => { })
         }
       })
     }
