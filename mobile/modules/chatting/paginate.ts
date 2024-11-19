@@ -1,7 +1,6 @@
 // useLibs
 // noPage
 
-import useFirestore from "esoftplay-firestore";
 import esp from "esoftplay/esp";
 import {
   collection,
@@ -26,7 +25,7 @@ export interface ChattingPaginageReturn {
 export default function m(): ChattingPaginageReturn {
   const rootPath: string = esp?.appjson?.()?.expo?.name
   const pathChat = [rootPath, 'chat', 'chat']
-  const { db } = useFirestore().init()
+  const { db } = esp.mod("firestore/index")().init()
 
   function getFirstChatsBatch(
     chat_id: string,

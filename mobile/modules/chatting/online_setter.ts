@@ -1,8 +1,8 @@
 // useLibs
 // noPage
-import useFirestore from 'esoftplay-firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
+import esp from 'esoftplay/esp';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
@@ -12,15 +12,15 @@ export default function m(): void {
   function _set() {
     const user = UserClass?.state().get()
     if (user && user.hasOwnProperty("id")) {
-      const { db } = useFirestore().init()
+      const { db } = esp.mod("firestore/index")().init()
       const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
 
       // adding orderby to get only document with uid field
-      useFirestore().getCollectionWhereOrderBy(db, [...path], [["user_id", '==', String(user?.id)]], [["uid", "desc"]], (dta: any) => {
+      esp.mod("firestore/index")().getCollectionWhereOrderBy(db, [...path], [["user_id", '==', String(user?.id)]], [["uid", "desc"]], (dta: any) => {
         if (dta?.length > 0) {
           const updatedId = dta.filter((x: any) => x?.data?.online && x?.data?.uid)?.[0]?.id || dta?.[0]?.id
-          useFirestore().updateDocument(db, [...path, updatedId], [{ key: "online", value: timestamp }], () => { })
+          esp.mod("firestore/index")().updateDocument(db, [...path, updatedId], [{ key: "online", value: timestamp }], () => { })
         }
       })
     }

@@ -276,8 +276,29 @@ function insertNotif() {
   }
   loop(0);
 }
-insertNotif()
+// insertNotif()
 // importChatConversation()
 // importChatMember()
 // importHistory()
 // importUser()
+
+const makeid = (length) => {
+  var result = '';
+  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() *
+      charactersLength));
+  }
+  return result;
+}
+
+const id = makeid(12)
+const pathTest = ["TEST-INSERT", "test", "insert"]
+const colRef = doc(db, ...pathTest, id)
+setDoc(colRef, {
+  test: 1
+}).then((snap) => {
+  console.log({ id })
+}).catch(console.err)
+

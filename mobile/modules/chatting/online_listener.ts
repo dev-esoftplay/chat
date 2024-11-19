@@ -1,11 +1,11 @@
 // useLibs
 // noPage
-import useFirestore from 'esoftplay-firestore';
 import { LibUtils } from 'esoftplay/cache/lib/utils/import';
 import { useEffect } from 'react';
 
 //@ts-ignore
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
+import esp from 'esoftplay/esp';
 import moment from 'esoftplay/moment';
 import useSafeState from 'esoftplay/state';
 moment().locale('id')
@@ -14,7 +14,7 @@ export default function m(chat_to: string): [string, any] {
   const [status, setStatus] = useSafeState<string>("Loading...")
   const [opposite, setOpposite] = useSafeState<string>("Loading...")
   const [offlineMode, setOfflineMode] = useSafeState(false)
-  const { db } = useFirestore().init()
+  const { db } = esp.mod("firestore/index")().init()
 
   function update(data: any) {
     const online = data.online
@@ -26,7 +26,7 @@ export default function m(chat_to: string): [string, any] {
   useEffect(() => {
     if (chat_to) {
       const pathUser = ChattingLib().pathUsers
-      useFirestore().listenCollection(db, [...pathUser], [["user_id", '==', chat_to]], [], (snapshoot: any) => {
+      esp.mod("firestore/index")().listenCollection(db, [...pathUser], [["user_id", '==', chat_to]], [], (snapshoot: any) => {
         if (snapshoot.length > 0) {
           update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
         }

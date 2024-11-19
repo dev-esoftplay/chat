@@ -1,7 +1,7 @@
 // useLibs
 // noPage
 
-import useFirestore, { DataId, updateValue, userData } from "esoftplay-firestore"
+import { FirestoreIndexProperty } from "esoftplay/cache/firestore/index/import"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
 import esp from "esoftplay/esp"
@@ -50,7 +50,7 @@ export default function m(): ChattingLibReturn {
 
   function chatSendNew(chat_to: string, message: string, attach: any, withHistory?: boolean, callback?: (message: any, chat_id: string) => void): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
     if (user?.id == chat_to) {
@@ -82,20 +82,20 @@ export default function m(): ChattingLibReturn {
     }
 
     /* me */
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberMe, () => { })
+    esp.mod("firestore/index")().addCollection(db, [...pathChat, chat_id, 'member'], memberMe, () => { }, console.warn)
     /* notMe */
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'member'], memberNotMe, () => { })
+    esp.mod("firestore/index")().addCollection(db, [...pathChat, chat_id, 'member'], memberNotMe, () => { }, console.warn)
 
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
+    esp.mod("firestore/index")().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
       msg['key'] = dt?.id
       if (callback) callback(msg, chat_id)
       if (withHistory) historyNew(chat_id, chat_to, message)
-    })
+    }, console.warn)
 
   }
   function historyNew(chat_id: string, chat_to: string, last_message: string): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
     const _time = (new Date().getTime() / 1000).toFixed(0)
@@ -126,19 +126,19 @@ export default function m(): ChattingLibReturn {
       chat_to_image: user?.image
     }
 
-    useFirestore().getCollectionWhere(db, [...pathUsers], [["user_id", "==", chat_to]], (arr) => {
+    esp.mod("firestore/index")().getCollectionWhere(db, [...pathUsers], [["user_id", "==", chat_to]], (arr) => {
       if (arr.length > 0) {
         historyMe["chat_to_username"] = arr?.[0]?.data?.username
         historyMe["chat_to_image"] = arr?.[0]?.data?.image
       }
-      useFirestore().addCollection(db, [...pathHistory], { ...me, ...historyMe }, () => { })
-      useFirestore().addCollection(db, [...pathHistory], { ...notMe, ...historyNotMe }, () => { })
+      esp.mod("firestore/index")().addCollection(db, [...pathHistory], { ...me, ...historyMe }, () => { })
+      esp.mod("firestore/index")().addCollection(db, [...pathHistory], { ...notMe, ...historyNotMe }, () => { })
     })
 
   }
   function chatSend(chat_id: string, chat_to: string, message: string, attach: any, callback: (message: any) => void): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
 
@@ -165,40 +165,41 @@ export default function m(): ChattingLibReturn {
       user_id: chat_to
     }
     /* simpan pesan */
-    useFirestore().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
+    esp.mod("firestore/index")().addCollection(db, [...pathChat, chat_id, 'conversation'], msg, (dt) => {
       msg['key'] = dt?.id
       if (callback) {
         callback(msg)
       }
-    })
 
-    /* set members */
-    useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
-      useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], member, () => { })
-    })
+      /* set members */
+      esp.mod("firestore/index")().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], (arr) => {
+        esp.mod("firestore/index")().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], member, () => { }, console.warn)
+      }, console.warn)
 
-    if (!chat_to) return
-    useFirestore().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
-      useFirestore().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], notMe, () => { })
-    })
+      if (!chat_to) return
+      esp.mod("firestore/index")().getCollectionIds(db, [...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], (arr) => {
+        esp.mod("firestore/index")().addDocument(db, [...pathChat, chat_id, 'member', arr[0]], notMe, () => { }, console.warn)
+      }, console.warn)
 
-    if (!chat_id) return
-    useFirestore().getCollectionIds(db, [...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
-      updateBatch(db, keys, pathHistory, [
-        { key: "time", value: _time },
-        { key: "last_message", value: message },
-        { key: "read", value: "0" },
-        { key: "sender_id", value: user?.id },
-      ])
-    })
+      if (!chat_id) return
+      esp.mod("firestore/index")().getCollectionIds(db, [...pathHistory], [['chat_id', '==', chat_id]], (keys) => {
+        updateBatch(db, keys, pathHistory, [
+          { key: "time", value: _time },
+          { key: "last_message", value: message },
+          { key: "read", value: "0" },
+          { key: "sender_id", value: user?.id },
+        ]).catch(console.warn)
+      }, console.warn)
+
+    }, console.warn)
   }
 
   function chatAll(chat_id: string, callback: (messages: any[]) => void, lastIndex?: string): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
-    useFirestore().getCollectionWhereOrderBy(db, [...pathChat, chat_id, 'conversation'], [], [], (arr) => {
+    esp.mod("firestore/index")().getCollectionWhereOrderBy(db, [...pathChat, chat_id, 'conversation'], [], [], (arr) => {
       if (arr) {
         const snapshoot: any = arr;
         let a: any = {}
@@ -216,10 +217,10 @@ export default function m(): ChattingLibReturn {
   }
   function chatGet(chat_id: string, key: string, callback: (chat: any) => void): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
-    useFirestore().getDocument(db, [...pathChat, chat_id, 'conversation', key], [], (dt: DataId) => {
+    esp.mod("firestore/index")().getDocument(db, [...pathChat, chat_id, 'conversation', key], [], (dt: FirestoreIndexProperty.DataId) => {
       if (dt) {
         callback({ key: dt.id, ...dt.data });
       } else {
@@ -229,11 +230,11 @@ export default function m(): ChattingLibReturn {
   }
   function chatDelete(chat_id: string, key: string): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
-    const persistKey = 'chatting_chat_message01' + chat_id
+    const { db } = esp.mod("firestore/index")().init()
+    const persistKey = 'chatting_chat_message02' + chat_id
 
     if (!user) return
-    useFirestore().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => {
+    esp.mod("firestore/index")().deleteDocument(db, [...pathChat, chat_id, 'conversation', key], () => {
       const storedValue: any = FastStorage.getItemSync(persistKey);
       const data = JSON.parse(storedValue)
       const index = data.findIndex((x: any) => x?.key == key)
@@ -245,9 +246,9 @@ export default function m(): ChattingLibReturn {
   }
   function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, isStartPage?: number, limit?: number): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
     if (!user) return
-    useFirestore().paginate(db, isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], limit || perPage, (dt, endR) => {
+    esp.mod("firestore/index")().paginate(db, isStartPage == 1 ? true : false, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], limit || perPage, (dt, endR) => {
       if (dt) {
         callback(dt, endR);
       } else {
@@ -257,26 +258,26 @@ export default function m(): ChattingLibReturn {
   }
   function chatListenChange(chat_id: string, callback: (removedChild: any) => void) {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
-    useFirestore().listenCollection(db, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
+    esp.mod("firestore/index")().listenCollection(db, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
       callback(dt);
     })
   }
-  function chatUpdate(key: string, chat_id: string, value: updateValue[]): void {
+  function chatUpdate(key: string, chat_id: string, value: FirestoreIndexProperty.updateValue[]): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
     if (!key) return
     if (!user) return
-    useFirestore().updateDocument(db, [...pathChat, chat_id, 'conversation', key], value, () => { })
+    esp.mod("firestore/index")().updateDocument(db, [...pathChat, chat_id, 'conversation', key], value, () => { })
   }
   function listenUser(user_id: string, callback: (user: any) => void) {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
-    useFirestore().listenDocument(db, [...pathUsers, user_id], (dt) => {
+    esp.mod("firestore/index")().listenDocument(db, [...pathUsers, user_id], (dt) => {
       if (dt) {
         callback(dt)
       } else {
@@ -302,15 +303,15 @@ export default function m(): ChattingLibReturn {
   }
 
   function setUser(username?: string, image?: string, deleted?: boolean): void {
-    const instance = useFirestore().init()
-    const firestoreUser = userData.get()[instance.app.name]
+    const instance = esp.mod("firestore/index")().init()
+    const firestoreUser = esp.modProp("firestore/index")?.userData.get()?.[instance.app.name]
     const user = UserClass.state().get()
 
     if (!user) return
     if (!firestoreUser) return
-    useFirestore().getCollectionIds(instance.db, [...pathUsers], [["user_id", "==", String(user?.id)]], (arr) => {
+    esp.mod("firestore/index")().getCollectionIds(instance.db, [...pathUsers], [["user_id", "==", String(user?.id)]], (arr) => {
       if (arr.length > 0) {
-        useFirestore().deleteBatchDocument(instance.db, [...pathUsers], arr, (re) => {
+        esp.mod("firestore/index")().deleteBatchDocument(instance.db, [...pathUsers], arr, (re) => {
           addUser()
         })
       } else {
@@ -319,7 +320,7 @@ export default function m(): ChattingLibReturn {
     })
 
     function addUser() {
-      useFirestore().addDocument(instance.db, [...pathUsers, firestoreUser?.uid], {
+      esp.mod("firestore/index")().addDocument(instance.db, [...pathUsers, firestoreUser?.uid], {
         uid: firestoreUser?.uid,
         user_id: user?.id || '0',
         username: LibUtils.ucwords(username || user?.name),
@@ -331,9 +332,9 @@ export default function m(): ChattingLibReturn {
     }
 
     function updateHistoryUser() {
-      useFirestore().getCollectionIds(instance.db, [...pathHistory], [["chat_to", "==", String(user?.id)]], (ids) => {
+      esp.mod("firestore/index")().getCollectionIds(instance.db, [...pathHistory], [["chat_to", "==", String(user?.id)]], (ids) => {
         if (ids.length > 0) {
-          useFirestore().updateBatchDocument(instance.db, [...pathHistory], ids,
+          esp.mod("firestore/index")().updateBatchDocument(instance.db, [...pathHistory], ids,
             [
               { key: "chat_to_username", value: LibUtils.ucwords(username || user?.name) },
               { key: "chat_to_image", value: image || user?.image }
@@ -346,7 +347,7 @@ export default function m(): ChattingLibReturn {
   }
   function getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
     const user = UserClass?.state?.()?.get?.()
-    const { db } = useFirestore().init()
+    const { db } = esp.mod("firestore/index")().init()
 
     if (!user) return
     let chattochecks: string[] = [];
@@ -354,7 +355,7 @@ export default function m(): ChattingLibReturn {
       if (!opposite_id) return
       if (!group_id) return
       chattochecks.push(id + '+' + opposite_id)
-      useFirestore().getCollectionWhere(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
+      esp.mod("firestore/index")().getCollectionWhere(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
         if (dt) {
           let s: any[] = dt
           if (s.length > 0) {
