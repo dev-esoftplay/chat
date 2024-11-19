@@ -1,7 +1,7 @@
 // useLibs
 // noPage
 
-import useFirestore from "esoftplay-firestore"
+import esp from "esoftplay/esp"
 
 export interface ChattingFirestoreReturn {
   init: (appName?: string, config?: any) => void
@@ -9,7 +9,7 @@ export interface ChattingFirestoreReturn {
 
 export default function m(): ChattingFirestoreReturn {
   const init = (appName?: string, config?: string) => {
-    useFirestore().init?.(appName, config)
+    esp.mod("firestore/index")().init?.(appName, config)
   }
 
   return {
