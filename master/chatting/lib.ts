@@ -152,17 +152,7 @@ export default function m(): ChattingLibReturn {
     if (attach) {
       msg['attach'] = attach
     }
-    /* buat chat member default */
-    let member = {
-      is_typing: false,
-      draf: '',
-      user_id: user?.id
-    }
-    let notMe = {
-      is_typing: false,
-      draf: '',
-      user_id: chat_to
-    }
+
     /* simpan pesan */
     esp.mod("firestore/index")().addCollection(app, [...pathChat, chat_id, 'conversation'], msg, (id) => {
       msg['key'] = id
@@ -170,24 +160,18 @@ export default function m(): ChattingLibReturn {
         callback(msg)
       }
 
-      /* set members */
-      esp.mod("firestore/index")().getCollectionIds(app, [...pathChat, chat_id, 'member'], [["user_id", '==', user?.id]], [], (arr) => {
-        esp.mod("firestore/index")().addDocument(app, [...pathChat, chat_id, 'member', arr[0]], member, () => { }, console.warn)
-      }, console.warn)
-
-      if (!chat_to) return
-      esp.mod("firestore/index")().getCollectionIds(app, [...pathChat, chat_id, 'member'], [["user_id", '==', chat_to]], [], (arr) => {
-        esp.mod("firestore/index")().addDocument(app, [...pathChat, chat_id, 'member', arr[0]], notMe, () => { }, console.warn)
-      }, console.warn)
-
       if (!chat_id) return
       esp.mod("firestore/index")().getCollectionIds(app, [...pathHistory], [['chat_id', '==', chat_id]], [], (keys) => {
-        updateBatch(app, keys, pathHistory, [
-          { key: "time", value: _time },
-          { key: "last_message", value: message },
-          { key: "read", value: "0" },
-          { key: "sender_id", value: user?.id },
-        ]).catch(console.warn)
+        if (keys.length > 0) {
+          esp.mod("firestore/index")().updateBatchDocument(app, [...pathHistory], keys,
+            [
+              { key: "time", value: _time },
+              { key: "last_message", value: message },
+              { key: "read", value: "0" },
+              { key: "sender_id", value: user?.id },
+            ]
+          )
+        }
       }, console.warn)
 
     }, console.warn)

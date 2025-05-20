@@ -37,14 +37,15 @@ export function insertToCache(chat_id: string, chat_to: string, group_id: string
 
 export function sendCacheToServer(messageObject: any, onResult: (res: any, chat_id?: string) => void, onFailed: (err: string) => void) {
   const { chat_to, message, attach, chat_id } = messageObject
-  if (chat_id.length > 1)
+  if (chat_id) {
     ChattingLib().chatSend(chat_id, chat_to, message, attach, (msg: ChattingItem) => {
       onResult(msg)
     })
-  else
+  } else {
     ChattingLib().chatSendNew(chat_to, message, attach, true, (msg, chat_id) => {
       onResult(msg, chat_id)
     })
+  }
 }
 
 export default function m(props: ChattingCache_sendProps): any {
