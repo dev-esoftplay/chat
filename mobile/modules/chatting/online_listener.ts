@@ -14,7 +14,6 @@ export default function m(chat_to: string): [string, any] {
   const [status, setStatus] = useSafeState<string>("Loading...")
   const [opposite, setOpposite] = useSafeState<string>("Loading...")
   const [offlineMode, setOfflineMode] = useSafeState(false)
-  const { db } = esp.mod("firestore/index")().init()
 
   function update(data: any) {
     const online = data.online
@@ -24,14 +23,20 @@ export default function m(chat_to: string): [string, any] {
   }
 
   useEffect(() => {
+    console.log({ chat_to })
     if (chat_to) {
-      const pathUser = ChattingLib().pathUsers
-      esp.mod("firestore/index")().listenCollection(db, [...pathUser], [["user_id", '==', chat_to]], [], (snapshoot: any) => {
-        if (snapshoot.length > 0) {
-          update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
-        }
-      })
+      return
     }
+    const app: any = esp.mod("firestore/index")().instance()
+    const pathUser = ChattingLib().pathUsers
+    const subs = esp.mod("firestore/index")().listenCollection(app, [...pathUser], [["user_id", '==', chat_to]], [], (snapshoot: any) => {
+      console.log('snapshoot', snapshoot.exists())
+      if (snapshoot.length > 0) {
+        update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
+      }
+    }, (e) => console.log('error', e))
+
+    return () => subs()
   }, [chat_to])
 
   useEffect(() => {

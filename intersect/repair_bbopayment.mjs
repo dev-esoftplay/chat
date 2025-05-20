@@ -5,11 +5,7 @@ import fs from "fs/promises";
 
 const config =
 {
-  "apiKey": "AIzaSyB04JT4JJfFsArIccAjBEn1nwIlg8EVWx4",
-  "authDomain": "bigbang-online.firebaseapp.com",
-  "databaseURL": "https://bigbang-online.firebaseio.com/",
-  "storageBucket": "gs://bigbang-online.appspot.com/",
-  "projectId": "bigbang-online"
+
 }
 
 const init = initializeApp(config, "firestore")

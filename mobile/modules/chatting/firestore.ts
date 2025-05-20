@@ -8,8 +8,8 @@ export interface ChattingFirestoreReturn {
 }
 
 export default function m(): ChattingFirestoreReturn {
-  const init = (appName?: string, config?: string) => {
-    esp.mod("firestore/index")().init?.(appName, config)
+  const init = (appName?: string, config?: any) => {
+    esp.mod("firestore/index")().init?.(config, appName)
   }
 
   return {
