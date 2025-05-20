@@ -7,13 +7,13 @@ import { useEffect } from 'react';
 
 export default function m(chat_id: string, chat_to: string): [number] {
   const [status, setStatus] = useSafeState(0)
-  const { db } = esp.mod("firestore/index")().init()
 
   useEffect(() => {
     if (chat_id && chat_to) {
       const path = ChattingLib().pathChat
 
-      esp.mod("firestore/index")().listenCollection(db, [...path, chat_id, "member"], [["user_id", "==", chat_to]], [], (snapshoot: any) => {
+      const app: any = esp.mod("firestore/index")().instance()
+      esp.mod("firestore/index")().listenCollection(app, [...path, chat_id, "member"], [["user_id", "==", chat_to]], [], (snapshoot: any) => {
         if (snapshoot.length > 0) {
           const timeStamp = (new Date().getTime() / 1000).toFixed(0)
           const lastOpen = snapshoot?.[0].is_open
