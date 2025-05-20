@@ -12,15 +12,15 @@ export default function m(): void {
   function _set() {
     const user = UserClass?.state().get()
     if (user && user.hasOwnProperty("id")) {
-      const { db } = esp.mod("firestore/index")().init()
+      const app: any = esp.mod("firestore/index")().instance()
       const path = ChattingLib().pathUsers
       const timestamp = (new Date().getTime() / 1000).toFixed(0)
 
       // adding orderby to get only document with uid field
-      esp.mod("firestore/index")().getCollectionWhereOrderBy(db, [...path], [["user_id", '==', String(user?.id)]], [["uid", "desc"]], (dta: any) => {
+      esp.mod("firestore/index")().getCollectionWhereOrderBy(app, [...path], [["user_id", '==', String(user?.id)]], [["uid", "desc"]], (dta: any) => {
         if (dta?.length > 0) {
           const updatedId = dta.filter((x: any) => x?.data?.online && x?.data?.uid)?.[0]?.id || dta?.[0]?.id
-          esp.mod("firestore/index")().updateDocument(db, [...path, updatedId], [{ key: "online", value: timestamp }], () => { })
+          esp.mod("firestore/index")().updateDocument(app, [...path, updatedId], [{ key: "online", value: timestamp }], () => { })
         }
       })
     }

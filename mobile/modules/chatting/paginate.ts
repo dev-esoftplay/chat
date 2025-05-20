@@ -1,39 +1,39 @@
 // useLibs
 // noPage
 
-import esp from "esoftplay/esp";
 import {
   collection,
-  DocumentData,
   getDocs,
+  getFirestore,
   limit,
   onSnapshot,
   orderBy,
   query,
-  QuerySnapshot,
   startAfter,
   Unsubscribe
-} from "firebase/firestore";
+} from "@react-native-firebase/firestore";
+import esp from "esoftplay/esp";
 
 const itemPerPage = 15;
 
 export interface ChattingPaginageReturn {
-  getFirstChatsBatch: (chat_id: string, snapshotCallback: (querySnapshot: QuerySnapshot<DocumentData>) => void) => () => void,
+  getFirstChatsBatch: (chat_id: string, snapshotCallback: (querySnapshot: any) => void) => () => void,
   chatsNextBatch: (chat_id: string, lastDocument: any) => any
 }
 
 export default function m(): ChattingPaginageReturn {
   const rootPath: string = esp?.appjson?.()?.expo?.name
   const pathChat = [rootPath, 'chat', 'chat']
-  const { db } = esp.mod("firestore/index")().init()
 
   function getFirstChatsBatch(
     chat_id: string,
-    snapshotCallback: (querySnapshot: QuerySnapshot<DocumentData>) => void
+    snapshotCallback: (querySnapshot: any) => void
   ): Unsubscribe {
+    const app: any = esp.mod("firestore/index")().instance()
+    const db: any = getFirestore(app)
+
     const q = query(
-      //@ts-ignore
-      collection(db, ...[...pathChat, chat_id, "conversation"]),
+      collection(db, esp.mod("firestore/index")().castPathToString([...pathChat, chat_id, "conversation"])),
       orderBy("time", "desc"),
       limit(itemPerPage)
     );
@@ -42,9 +42,11 @@ export default function m(): ChattingPaginageReturn {
   }
 
   async function chatsNextBatch(chat_id: string, lastDocument: any) {
+    const app: any = esp.mod("firestore/index")().instance()
+    const db: any = getFirestore(app)
+
     const next = query(
-      //@ts-ignore
-      collection(db, ...[...pathChat, chat_id, "conversation"]),
+      collection(db, esp.mod("firestore/index")().castPathToString([...pathChat, chat_id, "conversation"])),
       orderBy("time", "desc"),
       startAfter(lastDocument),
       limit(itemPerPage)

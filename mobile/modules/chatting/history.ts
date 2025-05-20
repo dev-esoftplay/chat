@@ -55,7 +55,8 @@ export default function m(): ChatHistoryReturn {
           setvalue()
         } else {
           const firestore = esp.mod("firestore/index")()
-          firestore.getCollectionWhere(firestore.init().db, [...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
+          const app: any = firestore.instance()
+          firestore.getCollectionWhere(app, [...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
             if (snap) {
               histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
               setvalue()
@@ -73,7 +74,8 @@ export default function m(): ChatHistoryReturn {
     if (!user || !user.hasOwnProperty("id") || !group_id) return
     const pathHistory = ChattingLib().pathHistory
     const firestore = esp.mod("firestore/index")()
-    firestore.getCollectionWhereOrderBy(firestore.init().db, [...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
+    const app: any = firestore.instance()
+    firestore.getCollectionWhereOrderBy(app, [...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
       update(snapshoot)
     })
   }

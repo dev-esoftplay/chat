@@ -14,10 +14,10 @@ import { UserClass } from 'esoftplay/cache/user/class/import';
 import useGlobalState from 'esoftplay/global';
 import isEqual from 'react-fast-compare';
 
+import { collection, getDocs, getFirestore, limit, onSnapshot, orderBy, query, startAfter } from '@react-native-firebase/firestore';
 import esp from 'esoftplay/esp';
 import moment from 'esoftplay/moment';
 import useSafeState from 'esoftplay/state';
-import { collection, DocumentData, getDocs, limit, onSnapshot, orderBy, query, QuerySnapshot, startAfter } from 'firebase/firestore';
 import { useEffect } from 'react';
 moment().locale('id')
 
@@ -87,7 +87,7 @@ const lastVisible = useGlobalState<any>(null)
 const useTasks = UseTasks()
 
 export default function m(props: ChattingChatProps): ChatChatReturn {
-  const path = ChattingLib().pathChat
+  const path: any = ChattingLib().pathChat
   const user = UserClass.state().useSelector((s: any) => s)
   const [chat_id, setChat_id] = useSafeState(props.chat_id)
   const { chat_to } = props
@@ -112,8 +112,6 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
       next()
     }, () => { });
   }))
-
-  const { db } = esp.mod("firestore/index")().init()
 
   ChattingOpen_setter(chat_id)
 
@@ -166,20 +164,21 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   function setRead(chat: any) {
     const path = ChattingLib().pathChat
     const pathHistory = ChattingLib().pathHistory
+    const app: any = esp.mod("firestore/index")().instance()
 
     if (!user || !user.hasOwnProperty("id")) return
 
-    esp.mod("firestore/index")().updateDocument(db, [...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
-    esp.mod("firestore/index")().getCollectionIds(db, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], (snap: any) => {
+    esp.mod("firestore/index")().updateDocument(app, [...path, chat_id, 'conversation', chat?.id], [{ key: "read", value: "1" }], () => { })
+    esp.mod("firestore/index")().getCollectionIds(app, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", chat?.user_id]], [], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        esp.mod("firestore/index")().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        esp.mod("firestore/index")().updateDocument(app, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
-    esp.mod("firestore/index")().getCollectionIds(db, [...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], (snap: any) => {
+    esp.mod("firestore/index")().getCollectionIds(app, [...pathHistory], [["user_id", "==", chat?.user_id], ["chat_to", "==", user?.id]], [], (snap: any) => {
       const dt = snap?.[0]
       if (dt) {
-        esp.mod("firestore/index")().updateDocument(db, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
+        esp.mod("firestore/index")().updateDocument(app, [...pathHistory, dt], [{ key: "read", value: "1" }], () => { })
       }
     })
   }
@@ -188,12 +187,14 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return () => { }
     }
-    //@ts-ignore
-    const colRef = collection(db, ...path, chat_id, 'conversation')
+    const app: any = esp.mod("firestore/index")().instance()
+    const db: any = getFirestore(app)
+
+    const colRef = collection(db, esp.mod("firestore/index")().castPathToString(path), chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), limit(PAGE_SIZE))
 
     let datas: any[] = []
-    const unsub = onSnapshot(fRef, (snap: QuerySnapshot<DocumentData>) => {
+    const unsub = onSnapshot(fRef, (snap) => {
       lastVisible.set(snap.docs[snap.docs.length - 1])
       setIsReady(true)
       datas = []
@@ -211,8 +212,9 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     if (!chat_id) {
       return
     }
-    //@ts-ignore
-    const colRef = collection(db, ...path, chat_id, 'conversation')
+    const app: any = esp.mod("firestore/index")().instance()
+    const db: any = getFirestore(app)
+    const colRef = collection(db, esp.mod("firestore/index")().castPathToString(path), chat_id, 'conversation')
     const fRef = query(colRef, orderBy("time", 'desc'), startAfter(lastVisible.get()), limit(PAGE_SIZE))
 
     let datas: any[] = []
