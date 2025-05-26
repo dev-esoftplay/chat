@@ -16,7 +16,7 @@ export interface ChattingLibReturn {
   chatGet: (chat_id: string, key: string, callback: (chat: any) => void) => void,
   chatDelete: (chat_id: string, key: string) => void,
   chatGetAll: (chat_id: string, callback: (allmsg: any, end?: boolean) => void, page?: number, limit?: number) => void,
-  chatListenChange: (chat_id: string, callback: (removedChild: any) => void) => void,
+  // chatListenChange: (chat_id: string, callback: (removedChild: any) => void) => void,
   chatUpdate: (key: string, chat_id: string, value: any) => void,
   listenUser: (user_id: string, callback: (user: any) => void) => void,
   setUser: (username?: string, image?: string, deleted?: boolean) => void,
@@ -85,8 +85,8 @@ export default function m(): ChattingLibReturn {
     /* notMe */
     esp.mod("firestore/index")().addCollection(app, [...pathChat, chat_id, 'member'], memberNotMe, () => { }, console.warn)
 
-    esp.mod("firestore/index")().addCollection(app, [...pathChat, chat_id, 'conversation'], msg, (id) => {
-      msg['key'] = id
+    esp.mod("firestore/index")().addCollection(app, [...pathChat, chat_id, 'conversation'], msg, (data) => {
+      msg['key'] = data?.id
       if (callback) callback(msg, chat_id)
       if (withHistory) historyNew(chat_id, chat_to, message)
     }, console.warn)
@@ -154,8 +154,8 @@ export default function m(): ChattingLibReturn {
     }
 
     /* simpan pesan */
-    esp.mod("firestore/index")().addCollection(app, [...pathChat, chat_id, 'conversation'], msg, (id) => {
-      msg['key'] = id
+    esp.mod("firestore/index")().addCollection(app, [...pathChat, chat_id, 'conversation'], msg, (data) => {
+      msg['key'] = data?.id
       if (callback) {
         callback(msg)
       }
@@ -240,15 +240,15 @@ export default function m(): ChattingLibReturn {
       }
     })
   }
-  function chatListenChange(chat_id: string, callback: (removedChild: any) => void) {
-    const user = UserClass?.state?.()?.get?.()
-    const app: any = esp.mod("firestore/index")().instance()
+  // function chatListenChange(chat_id: string, callback: (removedChild: any) => void) {
+  //   const user = UserClass?.state?.()?.get?.()
+  //   const app: any = esp.mod("firestore/index")().instance()
 
-    if (!user) return
-    esp.mod("firestore/index")().listenCollection(app, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
-      callback(dt);
-    })
-  }
+  //   if (!user) return
+  //   esp.mod("firestore/index")().listenCollection(app, [...pathChat, chat_id, 'conversation'], [], [["time", "desc"]], (dt) => {
+  //     callback(dt);
+  //   })
+  // }
   function chatUpdate(key: string, chat_id: string, values: { key: string, value: any }[]): void {
     const user = UserClass?.state?.()?.get?.()
     const app: any = esp.mod("firestore/index")().instance()
@@ -377,7 +377,7 @@ export default function m(): ChattingLibReturn {
     chatGet: chatGet,
     chatDelete: chatDelete,
     chatGetAll: chatGetAll,
-    chatListenChange: chatListenChange,
+    // chatListenChange: chatListenChange,
     chatUpdate: chatUpdate,
     listenUser: listenUser,
     setUser: setUser,
