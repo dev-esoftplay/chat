@@ -23,16 +23,14 @@ export default function m(chat_to: string): [string, any] {
   }
 
   useEffect(() => {
-    console.log({ chat_to })
-    if (chat_to) {
+    if (!chat_to) {
       return
     }
     const app: any = esp.mod("firestore/index")().instance()
     const pathUser = ChattingLib().pathUsers
-    const subs = esp.mod("firestore/index")().listenCollection(app, [...pathUser], [["user_id", '==', chat_to]], [], (snapshoot: any) => {
-      console.log('snapshoot', snapshoot.exists())
-      if (snapshoot.length > 0) {
-        update({ ...snapshoot[0], ...snapshoot?.[0]?.data })
+    const subs = esp.mod("firestore/index")().listenCollection(app, [...pathUser], [["user_id", '==', chat_to]], [], (data: any) => {
+      if (data.length > 0) {
+        update({ ...data[0], ...data?.[0]?.data })
       }
     }, (e) => console.log('error', e))
 
