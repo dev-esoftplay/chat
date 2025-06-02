@@ -341,7 +341,8 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
   }
 
   function formatTimestampToDate(timestamp: number) {
-    const date = new Date(Number(timestamp) * 1000);
+    const currentTimestamp = (new Date().getTime() / 1000).toFixed(0)
+    const date = new Date(Number(timestamp || currentTimestamp) * 1000);
     const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).
       padStart(2, '0')}-${String(date.getDate()).
         padStart(2, '0')} ${String(date.getHours()).
