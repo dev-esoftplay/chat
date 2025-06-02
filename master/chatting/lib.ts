@@ -15,6 +15,7 @@ export interface ChattingLibReturn {
   chatAll: (chat_id: string, callback: (messages: any[]) => void, lastIndex?: string) => void,
   chatGet: (chat_id: string, key: string, callback: (chat: any) => void) => void,
   chatDelete: (chat_id: string, key: string) => void,
+  historyDelete: (chat_id: string, deleted_user_id: string, callback?: () => void) => void,
   chatGetAll: (chat_id: string, callback: (allmsg: any, end?: boolean) => void, page?: number, limit?: number) => void,
   // chatListenChange: (chat_id: string, callback: (removedChild: any) => void) => void,
   chatUpdate: (key: string, chat_id: string, value: any) => void,
@@ -92,7 +93,7 @@ export default function m(): ChattingLibReturn {
     }, console.warn)
 
   }
-  function historyNew(chat_id: string, chat_to: string, last_message: string): void {
+  function historyNew(chat_id: string, chat_to: string, last_message: string, createHistory: "me" | "not-me" | "all" = "all"): void {
     const user = UserClass?.state?.()?.get?.()
     const app: any = esp.mod("firestore/index")().instance()
 
@@ -130,8 +131,20 @@ export default function m(): ChattingLibReturn {
         historyMe["chat_to_username"] = arr?.[0]?.data?.username
         historyMe["chat_to_image"] = arr?.[0]?.data?.image
       }
-      esp.mod("firestore/index")().addCollection(app, [...pathHistory], { ...me, ...historyMe }, () => { })
-      esp.mod("firestore/index")().addCollection(app, [...pathHistory], { ...notMe, ...historyNotMe }, () => { })
+
+      switch (createHistory) {
+        case "all":
+          esp.mod("firestore/index")().addCollection(app, [...pathHistory], { ...me, ...historyMe }, () => { });
+          esp.mod("firestore/index")().addCollection(app, [...pathHistory], { ...notMe, ...historyNotMe }, () => { });
+          break;
+        case "me":
+          esp.mod("firestore/index")().addCollection(app, [...pathHistory], { ...me, ...historyMe }, () => { });
+          break;
+        case "not-me":
+          esp.mod("firestore/index")().addCollection(app, [...pathHistory], { ...notMe, ...historyNotMe }, () => { });
+          break;
+      }
+
     })
 
   }
@@ -161,8 +174,12 @@ export default function m(): ChattingLibReturn {
       }
 
       if (!chat_id) return
-      esp.mod("firestore/index")().getCollectionIds(app, [...pathHistory], [['chat_id', '==', chat_id]], [], (keys) => {
-        if (keys.length > 0) {
+      esp.mod("firestore/index")().getCollectionWhere(app, [...pathHistory], [['chat_id', '==', chat_id]], (datas) => {
+        if (datas.length > 0) {
+          //data isinya {data} id
+          const keys = datas.map((x: any) => x.id)
+          const firstData = { ...datas[0].data, id: datas[0].data.id }
+
           esp.mod("firestore/index")().updateBatchDocument(app, [...pathHistory], keys,
             [
               { key: "time", value: _time },
@@ -171,6 +188,15 @@ export default function m(): ChattingLibReturn {
               { key: "sender_id", value: user?.id },
             ]
           )
+
+          if (datas?.length == 1) {
+            const isMe = firstData?.user_id == UserClass?.state?.()?.get?.()?.id
+            if (isMe) historyNew(chat_id, chat_to, message, "not-me")
+            else historyNew(chat_id, chat_to, message, "me")
+          }
+
+        } else {
+          historyNew(chat_id, chat_to, message)
         }
       }, console.warn)
 
@@ -227,6 +253,54 @@ export default function m(): ChattingLibReturn {
       }
     })
   }
+  function historyDelete(chat_id: string, deleted_user_id: string, callback?: () => void) {
+    const user = UserClass?.state?.()?.get?.()
+    const firestore = esp.mod("firestore/index")()
+    const app: any = firestore.instance()
+
+    if (!user) return
+    firestore.getCollectionIds(app, [...pathHistory], [["chat_id", "==", chat_id], ["user_id", "==", deleted_user_id]], [], (ids) => {
+      if (ids.length > 0) {
+        const path = [...pathChat, chat_id, "conversation"]
+        //deleting collection history
+        esp.mod("firestore/index")().deleteDocument(app, [...pathHistory, ids[0]], () => {
+          //deleting cache
+          deleteCacheData(ids[0])
+          // delete cache chat history
+          const persistKey = 'chatting_chat_message02' + chat_id
+          FastStorage.removeItem(persistKey)
+
+          firestore.getCollectionLimit(app, path, [], [["time", "desc"]], 1, (data: any) => {
+            if (data?.length > 0) {
+              const id = data?.[0]?.id
+              const lastBlocked: any[] = data?.[0]?.data?.hidden_history_user_ids
+              let values: any = []
+              if (lastBlocked) {
+                if (lastBlocked.includes(deleted_user_id)) {
+                  values = lastBlocked?.filter?.(x => x != deleted_user_id)
+                } else {
+                  values = lastBlocked
+                }
+              }
+              const updatedValue = [...values, deleted_user_id]
+              firestore.updateDocument(app, [...path, id], [{
+                //@ts-ignore
+                key: "hidden_history_user_ids", value: updatedValue
+              }], () => {
+              })
+            }
+          })
+        })
+      }
+    })
+  }
+
+  const deleteCacheData = (deletedKey: string) => {
+    const oldHistory = esp.modProp("chatting/history").state().get()
+    const updatedHistory = oldHistory.filter((x: any) => x.id != deletedKey)
+    esp.modProp("chatting/history").state().set(updatedHistory)
+  }
+
   function chatGetAll(chat_id: string, callback: (allmsg: any, end?: boolean) => void, isStartPage?: number, limit?: number): void {
     const user = UserClass?.state?.()?.get?.()
     const app: any = esp.mod("firestore/index")().instance()
@@ -376,6 +450,7 @@ export default function m(): ChattingLibReturn {
     chatAll: chatAll,
     chatGet: chatGet,
     chatDelete: chatDelete,
+    historyDelete: historyDelete,
     chatGetAll: chatGetAll,
     // chatListenChange: chatListenChange,
     chatUpdate: chatUpdate,
