@@ -209,6 +209,7 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         const isBlocked = data?.hidden_history_user_ids?.includes(user?.id) || false
         if (isBlocked) {
           isBlockedOnFirst.set(true)
+          lastVisible.reset()
           break;
         } else {
           isBlockedOnFirst.set(false)
@@ -235,10 +236,12 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
     let datas: any[] = []
     getDocs(fRef).then((snap) => {
       if (!snap.empty) {
+        lastVisible.set(snap.docs[snap.docs.length - 1])
         for (const doc of snap.docs) {
           const data = doc.data();
           const isBlocked = data?.hidden_history_user_ids?.includes(user?.id) || false
           if (isBlocked || isBlockedOnFirst.get()) {
+            lastVisible.reset()
             break;
           }
           datas.push({ ...data, id: doc.id, key: doc.id });
@@ -248,7 +251,6 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
         // })
 
         setData(LibObject.push(data, ...datas)())
-        lastVisible.set(snap.docs[snap.docs.length - 1])
       }
     }).catch((e) => {
       console.warn('ERROR NEXT: ', e);
