@@ -1,9 +1,10 @@
 // useLibs
 // noPage
 
-import { doc, serverTimestamp, writeBatch } from "@react-native-firebase/firestore"
+import { collection, doc, FirebaseFirestoreTypes, getDocs, getFirestore, limit, query, serverTimestamp, where, writeBatch } from "@react-native-firebase/firestore"
 import { LibUtils } from "esoftplay/cache/lib/utils/import"
 import { UserClass } from "esoftplay/cache/user/class/import"
+import { UserData } from "esoftplay/cache/user/data/import"
 import esp from "esoftplay/esp"
 import FastStorage from "esoftplay/mmkv"
 import { Alert } from "react-native"
@@ -20,7 +21,7 @@ export interface ChattingLibReturn {
   // chatListenChange: (chat_id: string, callback: (removedChild: any) => void) => void,
   chatUpdate: (key: string, chat_id: string, value: any) => void,
   listenUser: (user_id: string, callback: (user: any) => void) => void,
-  setUser: (username?: string, image?: string, deleted?: boolean) => void,
+  setUser: (username?: string, image?: string, deleted?: boolean, forceUpdate?: boolean) => void,
   getChatId: (chat_to: string, group_id: string, callback: (chat_id: string) => void) => void,
   makeId: (length: number) => void,
   pathChat: any,
@@ -361,13 +362,24 @@ export default function m(): ChattingLibReturn {
     }
   }
 
-  function setUser(username?: string, image?: string, deleted?: boolean): void {
+  function setUser(username?: string, image?: string, deleted?: boolean, forceUpdate?: boolean): void {
     const app: any = esp.mod("firestore/index")().instance()
     const firestoreUser = esp.mod("firestore/index")().getUserData(app.name)
     const user = UserClass.state().get()
 
     if (!user) return
-    if (!firestoreUser) return
+    if (!firestoreUser?.uid) return
+
+    const now = Date.now()
+    const lastUpdateKey = `last_user_update_${user?.id}`
+    const lastUpdateTime = parseInt(FastStorage.getItemSync(lastUpdateKey) || '0')
+    UserData.register(lastUpdateKey)
+
+    if (!forceUpdate && now - lastUpdateTime < 3600000) {
+      return
+    }
+    FastStorage.setItem(lastUpdateKey, String(now))
+
     esp.mod("firestore/index")().getCollectionIds(app, [...pathUsers], [["user_id", "==", String(user?.id)]], [], (arr) => {
       if (arr.length > 0) {
         esp.mod("firestore/index")().deleteBatchDocument(app, [...pathUsers], arr, (re) => {
@@ -406,7 +418,6 @@ export default function m(): ChattingLibReturn {
   }
   function getChatId(chat_to: string, group_id: string, callback: (chat_id: string) => void): void {
     const user = UserClass?.state?.()?.get?.()
-    const app: any = esp.mod("firestore/index")().instance()
 
     if (!user) return
     let chattochecks: string[] = [];
@@ -414,17 +425,24 @@ export default function m(): ChattingLibReturn {
       if (!opposite_id) return
       if (!group_id) return
       chattochecks.push(id + '+' + opposite_id)
-      esp.mod("firestore/index")().getCollectionWhere(app, [...pathHistory], [["user_id", "==", user?.id], ["chat_to", "==", opposite_id], ["group_id", "==", group_id]], (dt) => {
-        if (dt) {
-          let s: any[] = dt
-          if (s.length > 0) {
-            callback(s[0]?.data?.chat_id)
-          } else {
-            callback("")
-          }
-        } else {
-          callback("")
+      const fixedPath = esp.mod("firestore/index")().castPathToString([...pathHistory])
+      if (fixedPath.split("/").length % 2 == 0) {
+        console.warn("path untuk akses Collection data tidak boleh berhenti di Doc [Firestore.get.collection]")
+        return
+      }
+
+      const db = getFirestore()
+      let queryRef: FirebaseFirestoreTypes.Query = collection(db, fixedPath)
+      queryRef = query(queryRef, where("user_id", "==", user?.id), where("chat_to", "==", opposite_id), where("group_id", "==", group_id), limit(1));
+
+      let chat_id: string = ""
+      getDocs(queryRef).then((snap) => {
+        if (snap.docs.length > 0) {
+          chat_id = snap.docs?.[0]?.data?.()?.chat_id || ""
         }
+        callback(chat_id)
+      }).catch(() => {
+        callback(chat_id)
       })
     }
     /* check my node */

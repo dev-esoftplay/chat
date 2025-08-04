@@ -1,5 +1,6 @@
 // useLibs
 // noPage
+import { collection, getDocs, getFirestore, limit as limitFn, orderBy, query, startAfter as startAfterFn, where } from '@react-native-firebase/firestore';
 import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
 import { UserClass } from 'esoftplay/cache/user/class/import';
 import esp from 'esoftplay/esp';
@@ -8,82 +9,136 @@ import { useEffect } from 'react';
 
 export interface ChatHistoryReturn {
   data: any[],
-  update: () => void,
+  refresh: () => void,
+  loadMore: () => void,
   deleteCache: () => void,
   unread: number
 }
 
-const cattingHistory: any = useGlobalState<any[]>([], { inFastStorage: true, persistKey: 'chatting_history', inFile: true, isUserData: true });
+const chattingHistory = useGlobalState<any[]>([], {
+  inFastStorage: true,
+  persistKey: 'chatting_history',
+  inFile: true,
+  isUserData: true
+});
 export function state(): useGlobalReturn<any[]> {
-  return cattingHistory
+  return chattingHistory;
 }
+
+const lastVisibleRef = useGlobalState<any>(null)
+const loadingRef = useGlobalState<boolean>(false)
+const limit = 20;
+
 export default function m(): ChatHistoryReturn {
-  const user = UserClass.state().useSelector((s: any) => s)
-  const group_id = esp.config("group_id")
+  const user = UserClass.state().useSelector((s: any) => s);
+  const group_id = esp.config("group_id");
+  const espFirestore = esp.mod("firestore/index")()
+  const app: any = espFirestore.instance()
 
   useEffect(() => {
-    _get()
-  }, [])
+    refresh();
+  }, []);
 
-  function update(hist: any) {
-    let histories: any[] = []
-    let count = 0
+  async function update(docs: any[], replace = false) {
+    let histories: any[] = [];
 
-    const setvalue = () => {
-      count++
-      if (hist.length == count) {
-        state().set(histories.sort((a, b) => b.time - a.time))
-      }
-    }
+    await Promise.all(
+      docs.map(async (item: any) => {
+        const _snapshoot = item.data();
 
-    if (hist.length > 0)
-      hist.forEach((item: any) => {
-        const path = ChattingLib().pathUsers
-        const _snapshoot = item.data
+        const base = {
+          user_id: _snapshoot?.sender_id,
+          chat_id: _snapshoot?.chat_id,
+          chat_to: _snapshoot?.chat_to,
+          msg: _snapshoot?.last_message,
+          time: _snapshoot?.time,
+          read: _snapshoot.read,
+          id: item.id,
+          data: _snapshoot
+        };
 
-        item['user_id'] = _snapshoot?.sender_id
-        item['chat_id'] = _snapshoot?.chat_id
-        item['chat_to'] = _snapshoot?.chat_to
-        item['msg'] = _snapshoot?.last_message
-        item['time'] = _snapshoot?.time
-        item['read'] = _snapshoot.read
-
-        if (_snapshoot?.chat_to_username && _snapshoot.chat_to_image) {
-          item['image'] = _snapshoot.chat_to_image
-          item['username'] = _snapshoot.chat_to_username
-          histories.push({ ..._snapshoot, ...item })
-          setvalue()
+        if (_snapshoot?.chat_to_username && _snapshoot?.chat_to_image) {
+          histories.push({
+            ..._snapshoot,
+            ...base,
+            username: _snapshoot.chat_to_username,
+            image: _snapshoot.chat_to_image
+          });
         } else {
-          const firestore = esp.mod("firestore/index")()
-          const app: any = firestore.instance()
-          firestore.getCollectionWhere(app, [...path], [["user_id", "==", _snapshoot.chat_to]], (snap: any) => {
-            if (snap) {
-              histories.push({ ...snap?.[0]?.data, id: snap?.[0]?.id, ...item, })
-              setvalue()
-            } else {
-              setvalue()
-            }
-          })
+          const userPath = ChattingLib().pathUsers;
+          const db = getFirestore(app)
+
+          const docRef = query(
+            collection(db, espFirestore.castPathToString([...userPath])),
+            where("user_id", "==", _snapshoot.chat_to)
+          );
+          const docSnap = await getDocs(docRef);
+          const userData = docSnap.docs[0]?.data();
+
+          if (userData) {
+            histories.push({
+              ...userData,
+              ...base,
+              username: userData.username,
+              image: userData.image
+            });
+          } else {
+            histories.push(base);
+          }
         }
-
-
       })
+    );
+
+    const newData = replace ? histories : [...state().get(), ...histories];
+    state().set(newData.sort((a, b) => b.time - a.time));
   }
 
-  function _get() {
-    if (!user || !user.hasOwnProperty("id") || !group_id) return
-    const pathHistory = ChattingLib().pathHistory
-    const firestore = esp.mod("firestore/index")()
-    const app: any = firestore.instance()
-    firestore.getCollectionWhereOrderBy(app, [...pathHistory], [["user_id", "==", String(user?.id)], ["group_id", "==", group_id]], [["time", "desc"]], (snapshoot: any) => {
-      update(snapshoot)
-    })
+  async function _get(replace = false) {
+    const db = getFirestore(app)
+    if (!user?.id || !group_id || loadingRef.get()) return;
+    loadingRef.set(true);
+
+    const pathHistory = ChattingLib().pathHistory;
+    const colRef = collection(db, espFirestore.castPathToString([...pathHistory]));
+
+    const constraints = [
+      where("user_id", "==", String(user.id)),
+      where("group_id", "==", group_id),
+      orderBy("time", "desc"),
+      limitFn(limit)
+    ];
+
+    if (!replace && lastVisibleRef.get()) {
+      constraints.push(startAfterFn(lastVisibleRef.get()));
+    }
+
+    const q = query(colRef, ...constraints);
+    const snap = await getDocs(q);
+
+
+    if (!snap.empty) {
+      const docs = snap.docs;
+      lastVisibleRef.set(docs[docs.length - 1])
+      await update(docs, replace);
+    }
+
+    loadingRef.reset()
+  }
+
+  function refresh() {
+    lastVisibleRef.reset()
+    _get(true);
+  }
+
+  function loadMore() {
+    _get(false);
   }
 
   return {
     data: state().useSelector((x: any) => x),
-    update: _get,
+    refresh,
+    loadMore,
     deleteCache: state().reset,
-    unread: state().useSelector((x: any) => x).filter?.(((x: any) => x?.data?.read == 0)).length
-  }
+    unread: state().useSelector((x: any) => x).filter?.((x: any) => x?.data?.read === 0)?.length ?? 0
+  };
 }
