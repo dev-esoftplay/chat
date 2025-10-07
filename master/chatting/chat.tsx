@@ -196,25 +196,27 @@ export default function m(props: ChattingChatProps): ChatChatReturn {
 
     let datas: any[] = []
     const unsub = onSnapshot(fRef, (snap) => {
-      lastVisible.set(snap.docs[snap.docs.length - 1])
-      setIsReady(true)
-      datas = []
+      if (snap?.docs?.length > 0) {
+        lastVisible.set(snap.docs[snap.docs.length - 1])
+        setIsReady(true)
+        datas = []
 
-      // snap.docs.forEach((doc) => {
-      //   datas.push({ ...doc.data(), id: doc.id, key: doc.id })
-      // })
+        // snap.docs.forEach((doc) => {
+        //   datas.push({ ...doc.data(), id: doc.id, key: doc.id })
+        // })
 
-      for (const doc of snap.docs) {
-        const data = doc.data();
-        const isBlocked = data?.hidden_history_user_ids?.includes(user?.id) || false
-        if (isBlocked) {
-          isBlockedOnFirst.set(true)
-          lastVisible.reset()
-          break;
-        } else {
-          isBlockedOnFirst.set(false)
+        for (const doc of snap.docs) {
+          const data = doc.data();
+          const isBlocked = data?.hidden_history_user_ids?.includes(user?.id) || false
+          if (isBlocked) {
+            isBlockedOnFirst.set(true)
+            lastVisible.reset()
+            break;
+          } else {
+            isBlockedOnFirst.set(false)
+          }
+          datas.push({ ...data, id: doc.id, key: doc.id });
         }
-        datas.push({ ...data, id: doc.id, key: doc.id });
       }
 
       setData(datas)
