@@ -437,7 +437,7 @@ export default function m(): ChattingLibReturn {
 
       let chat_id: string = ""
       getDocs(queryRef).then((snap) => {
-        if (snap.docs.length > 0) {
+        if (snap?.docs?.length > 0) {
           chat_id = snap.docs?.[0]?.data?.()?.chat_id || ""
         }
         callback(chat_id)
