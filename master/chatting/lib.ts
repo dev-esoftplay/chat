@@ -380,7 +380,7 @@ export default function m(): ChattingLibReturn {
     }
     FastStorage.setItem(lastUpdateKey, String(now))
 
-    esp.mod("firestore/index")().getCollectionIds(app, [...pathUsers], [["user_id", "==", String(user?.id)]], [], (arr) => {
+    esp.mod("firestore/index")().getCollectionIds(app, [...pathUsers], [["uid", "==", String(firestoreUser?.uid)]], [], (arr) => {
       if (arr.length > 0) {
         esp.mod("firestore/index")().deleteBatchDocument(app, [...pathUsers], arr, (re) => {
           addUser()
