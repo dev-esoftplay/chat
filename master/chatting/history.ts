@@ -1,11 +1,12 @@
 // useLibs
 // noPage
-import { collection, getDocs, getFirestore, limit as limitFn, orderBy, query, startAfter as startAfterFn, where } from '@react-native-firebase/firestore';
-import { ChattingLib } from 'esoftplay/cache/chatting/lib/import';
-import { UserClass } from 'esoftplay/cache/user/class/import';
-import esp from 'esoftplay/esp';
-import useGlobalState, { useGlobalReturn } from 'esoftplay/global';
-import { useEffect } from 'react';
+
+import { collection, getDocs, getFirestore, limit as limitFn, orderBy, query, startAfter as startAfterFn, where } from '@react-native-firebase/firestore'
+import { ChattingLib } from 'esoftplay/cache/chatting/lib/import'
+import { UserClass } from 'esoftplay/cache/user/class/import'
+import esp from 'esoftplay/esp'
+import useGlobalState, { useGlobalReturn } from 'esoftplay/global'
+import { useMemo } from 'react'
 
 export interface ChatHistoryReturn {
   data: any[],
@@ -20,125 +21,162 @@ const chattingHistory = useGlobalState<any[]>([], {
   persistKey: 'chatting_history',
   inFile: true,
   isUserData: true
-});
+})
+
 export function state(): useGlobalReturn<any[]> {
-  return chattingHistory;
+  return chattingHistory
 }
+export const loadingData = useGlobalState<boolean>(false)
 
 const lastVisibleRef = useGlobalState<any>(null)
 const loadingRef = useGlobalState<boolean>(false)
-const limit = 20;
 
+const LIMIT = 20
 export default function m(): ChatHistoryReturn {
-  const user = UserClass.state().useSelector((s: any) => s);
-  const group_id = esp.config("group_id");
-  const espFirestore = esp.mod("firestore/index")()
+  const user = UserClass.state().useSelector(s => s)
+  const data = state().useSelector(s => s)
+
+  const group_id = esp.config('group_id')
+
+  const espFirestore = esp.mod('firestore/index')()
   const app: any = espFirestore.instance()
 
-  useEffect(() => {
-    refresh();
-  }, []);
+  const db = useMemo(() => getFirestore(app), [app])
 
-  async function update(docs: any[], replace = false) {
-    let histories: any[] = [];
+  const pathHistory = ChattingLib().pathHistory
+  const pathUsers = ChattingLib().pathUsers
 
-    await Promise.all(
-      docs.map(async (item: any) => {
-        const _snapshoot = item.data();
+  async function resolveUsers(docs: any[]) {
+    const needFetch = docs
+      .map(d => d.data())
+      .filter(d => !d.chat_to_username)
+      .map(d => d.chat_to)
 
-        const base = {
-          user_id: _snapshoot?.sender_id,
-          chat_id: _snapshoot?.chat_id,
-          chat_to: _snapshoot?.chat_to,
-          msg: _snapshoot?.last_message,
-          time: _snapshoot?.time,
-          read: _snapshoot.read,
-          id: item.id,
-          data: _snapshoot
-        };
+    if (!needFetch.length) return {}
 
-        if (_snapshoot?.chat_to_username && _snapshoot?.chat_to_image) {
-          histories.push({
-            ..._snapshoot,
-            ...base,
-            username: _snapshoot.chat_to_username,
-            image: _snapshoot.chat_to_image
-          });
-        } else {
-          const userPath = ChattingLib().pathUsers;
-          const db = getFirestore(app)
+    const uniq = [...new Set(needFetch)].slice(0, 10)
 
-          const docRef = query(
-            collection(db, espFirestore.castPathToString([...userPath])),
-            where("user_id", "==", _snapshoot.chat_to)
-          );
-          const docSnap = await getDocs(docRef);
-          const userData = docSnap.docs[0]?.data();
+    const snap = await getDocs(
+      query(
+        collection(db, espFirestore.castPathToString([...pathUsers])),
+        where('user_id', 'in', uniq)
+      )
+    )
 
-          if (userData) {
-            histories.push({
-              ...userData,
-              ...base,
-              username: userData.username,
-              image: userData.image
-            });
-          } else {
-            histories.push(base);
-          }
-        }
-      })
-    );
-
-    const newData = replace ? histories : [...state().get(), ...histories];
-    state().set(newData.sort((a, b) => b.time - a.time));
+    return Object.fromEntries(
+      snap.docs.map(d => [d.data().user_id, d.data()])
+    )
   }
 
-  async function _get(replace = false) {
-    const db = getFirestore(app)
-    if (!user?.id || !group_id || loadingRef.get()) return;
-    loadingRef.set(true);
+  async function update(docs: any[], replace = false) {
+    const userMap = await resolveUsers(docs)
 
-    const pathHistory = ChattingLib().pathHistory;
-    const colRef = collection(db, espFirestore.castPathToString([...pathHistory]));
+    const incoming = docs.map(item => {
+      const d = item.data()
+      const cachedUser = userMap[d.chat_to]
 
-    const constraints = [
-      where("user_id", "==", String(user.id)),
-      where("group_id", "==", group_id),
-      orderBy("time", "desc"),
-      limitFn(limit)
-    ];
+      return {
+        id: item.id,
+        chat_id: d.chat_id,
+        chat_to: d.chat_to,
+        user_id: d.sender_id,
+        msg: d.last_message,
+        time: d.time,
+        read: d.read,
+        data: d,
+        username: d.chat_to_username ?? cachedUser?.username,
+        image: d.chat_to_image ?? cachedUser?.image
+      }
+    })
 
-    if (!replace && lastVisibleRef.get()) {
-      constraints.push(startAfterFn(lastVisibleRef.get()));
+    if (replace) {
+      state().set(incoming)
+      return
     }
 
-    const q = query(colRef, ...constraints);
-    const snap = await getDocs(q);
+    const map = new Map<string, any>()
 
-
-    if (!snap.empty) {
-      const docs = snap.docs;
-      lastVisibleRef.set(docs[docs.length - 1])
-      await update(docs, replace);
+    for (const item of state().get()) {
+      map.set(item.id, item)
     }
 
-    loadingRef.reset()
+    for (const item of incoming) {
+      map.set(item.id, item)
+    }
+
+    state().set(
+      Array.from(map.values()).sort((a, b) => b.time - a.time)
+    )
+  }
+
+  async function fetchData(replace = false) {
+    if (replace) {
+      loadingData.set(true)
+      lastVisibleRef.reset()
+    }
+
+    if (
+      !user?.id ||
+      !group_id ||
+      loadingRef.get() ||
+      lastVisibleRef.get() === 'EOF'
+    ) {
+      loadingData.reset()
+      return
+    }
+
+    loadingRef.set(true)
+
+    try {
+      const constraints: any[] = [
+        where('user_id', '==', String(user.id)),
+        where('group_id', '==', group_id),
+        orderBy('time', 'desc'),
+        limitFn(LIMIT)
+      ]
+
+      if (!replace && lastVisibleRef.get()) {
+        constraints.push(startAfterFn(lastVisibleRef.get()))
+      }
+
+      const snap = await getDocs(
+        query(
+          collection(db, espFirestore.castPathToString([...pathHistory])),
+          ...constraints
+        )
+      )
+
+      if (snap.empty) {
+        lastVisibleRef.set('EOF')
+        return
+      }
+
+      lastVisibleRef.set(snap.docs.at(-1))
+      await update(snap.docs, replace)
+    } finally {
+      loadingRef.reset()
+      loadingData.reset()
+    }
   }
 
   function refresh() {
-    lastVisibleRef.reset()
-    _get(true);
+    fetchData(true)
   }
 
   function loadMore() {
-    _get(false);
+    fetchData(false)
   }
 
+  const unread = useMemo(
+    () => data.filter(x => x?.data?.read === 0).length,
+    [data]
+  )
+
   return {
-    data: state().useSelector((x: any) => x),
+    data,
     refresh,
     loadMore,
     deleteCache: state().reset,
-    unread: state().useSelector((x: any) => x).filter?.((x: any) => x?.data?.read === 0)?.length ?? 0
-  };
+    unread
+  }
 }
