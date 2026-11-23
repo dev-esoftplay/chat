@@ -64,6 +64,22 @@ if (fs.existsSync("./package.json")) {
 	nextVersion += nextNumber
 	const newPackJson = { ...packJson, version: nextVersion }
 	fs.writeFileSync("./package.json", JSON.stringify(newPackJson, undefined, 2))
-	shell("npm publish", { stdio: ['inherit', 'inherit', 'inherit'] })
-	console.log("\nbun add esoftplay-" + moduleName + "@" + nextVersion + " && bun install \n")
+
+	const masterPath = "/var/www/html/mobile-master"
+  shell("npm pack", { stdio: ['inherit', 'inherit', 'inherit'] })
+  shell("mv -f ./esoftplay-chatting-" + nextVersion + ".tgz " + masterPath + "/esoftplay-chatting.tgz")
+
+  /* git push on mobile-master */
+  try {
+    const opt = { cwd: masterPath, stdio: ['inherit', 'inherit', 'inherit'] }
+    shell("git add .", opt)
+    shell('git commit -m "publish ' + moduleName + ' v' + nextVersion + '"', opt)
+    shell("git push", opt)
+    console.log("\nGit push success: " + masterPath + "\n")
+  } catch (e) {
+    console.error("\nGit push failed: " + e.message + "\n")
+  }
+
+  console.log("\nbun add " + masterPath + "/esoftplay-chatting.tgz && bun install\n")
+
 }

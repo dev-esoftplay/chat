@@ -41,12 +41,17 @@ export default function m(): ChatHistoryReturn {
   const espFirestore = esp.mod('firestore/index')()
   const app: any = espFirestore.instance()
 
-  const db = useMemo(() => getFirestore(app), [app])
+  const db = useMemo(() => {
+    if (!app) return null
+    return getFirestore(app)
+  }, [app])
 
   const pathHistory = ChattingLib().pathHistory
   const pathUsers = ChattingLib().pathUsers
 
   async function resolveUsers(docs: any[]) {
+    if (!db || !docs?.length) return {}
+
     const needFetch = docs
       .map(d => d.data())
       .filter(d => !d.chat_to_username)
@@ -56,12 +61,20 @@ export default function m(): ChatHistoryReturn {
 
     const uniq = [...new Set(needFetch)].slice(0, 10)
 
-    const snap = await getDocs(
-      query(
-        collection(db, espFirestore.castPathToString([...pathUsers])),
-        where('user_id', 'in', uniq)
+    let snap
+    try {
+      snap = await getDocs(
+        query(
+          collection(db, espFirestore.castPathToString([...pathUsers])),
+          where('user_id', 'in', uniq)
+        )
       )
-    )
+    } catch (e) {
+      console.error('resolveUsers error', e)
+      return {}
+    }
+
+    if (!snap?.docs?.length) return {}
 
     return Object.fromEntries(
       snap.docs.map(d => [d.data().user_id, d.data()])
@@ -69,6 +82,8 @@ export default function m(): ChatHistoryReturn {
   }
 
   async function update(docs: any[], replace = false) {
+    if (!docs?.length) return
+
     const userMap = await resolveUsers(docs)
 
     const incoming = docs.map(item => {
@@ -110,6 +125,8 @@ export default function m(): ChatHistoryReturn {
   }
 
   async function fetchData(replace = false) {
+    if (!db) return
+
     if (replace) {
       loadingData.set(true)
       lastVisibleRef.reset()
@@ -139,14 +156,20 @@ export default function m(): ChatHistoryReturn {
         constraints.push(startAfterFn(lastVisibleRef.get()))
       }
 
-      const snap = await getDocs(
-        query(
-          collection(db, espFirestore.castPathToString([...pathHistory])),
-          ...constraints
+      let snap
+      try {
+        snap = await getDocs(
+          query(
+            collection(db, espFirestore.castPathToString([...pathHistory])),
+            ...constraints
+          )
         )
-      )
+      } catch (e) {
+        console.error('getDocs failed', e)
+        return
+      }
 
-      if (snap.empty) {
+      if (!snap || snap.empty) {
         lastVisibleRef.set('EOF')
         return
       }
